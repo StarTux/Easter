@@ -308,6 +308,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                     rabbit.setPersistent(false);
                     rabbit.setRemoveWhenFarAway(true);
                     rabbit.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 9999, 0, true, false));
+                    rabbit.setInvulnerable(true);
                     switch (random.nextInt(6)) {
                     case 0: rabbit.setRabbitType(Rabbit.Type.BLACK); break;
                     case 1: rabbit.setRabbitType(Rabbit.Type.BLACK_AND_WHITE); break;
@@ -321,7 +322,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                         rabbit.setBaby();
                     }
                 });
-            double v = 0.5;
+            double v = 0.25;
             Vector velo = new Vector(random.nextDouble() * v - random.nextDouble() * v,
                                      v,
                                      random.nextDouble() * v - random.nextDouble() * v);
@@ -350,7 +351,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                 }
                 fw.setFireworkMeta(meta);
             });
-        firework.detonate();
+        getServer().getScheduler().runTaskLater(this, () -> { firework.detonate(); }, 60L);
         player.playSound(player.getEyeLocation(), Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.MASTER, 0.5f, 2.0f);
         getServer().dispatchCommand(getServer().getConsoleSender(), cmd);
         announce("" + ChatColor.LIGHT_PURPLE + player.getName() + " found an easter egg!");

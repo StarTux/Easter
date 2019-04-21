@@ -1,4 +1,4 @@
-world: world
-x: 0
-z: 0
-radius: 32
+world: spawn
+x: 2089
+z: 939
+radius: 128
