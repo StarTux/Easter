@@ -3,7 +3,6 @@ package com.cavetale.easter;
 import com.cavetale.mirage.PlayerUseEntityEvent;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.winthier.generic_events.GenericEvents;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -12,7 +11,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +69,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         // playerHeads
         YamlConfiguration eeyaml = YamlConfiguration.loadConfiguration(new InputStreamReader(getResource("easter_eggs.yml")));
         for (Map<?, ?> map : eeyaml.getMapList("heads")) {
-            PlayerHead head = new PlayerHead((String)map.get("Id"), (String) map.get("Texture"));
+            PlayerHead head = new PlayerHead((String) map.get("Id"), (String) map.get("Texture"));
             this.playerHeads.add(head);
         }
         if (this.playerHeads.isEmpty()) throw new IllegalStateException("No player heads loaded!");
@@ -81,6 +79,8 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         setupRound();
         getServer().getScheduler().runTaskTimer(this, this::onTick, 1L, 1L);
         getServer().getPluginManager().registerEvents(this, this);
+        getCommand("easter").setExecutor(new EasterCommand(this));
+        getCommand("hi").setExecutor(new HiCommand(this));
     }
 
     @Override
@@ -115,52 +115,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String alias, String[] args) {
-        if (args.length == 0) return false;
-        switch (args[0]) {
-        case "reload":
-            reloadConfig();
-            sender.sendMessage("config.yml reloaded");
-            return true;
-        case "start":
-            startNewRound();
-            setupRound();
-            sender.sendMessage("New round started");
-            return true;
-        case "info":
-            sender.sendMessage("=== Round info");
-            sender.sendMessage(new GsonBuilder().setPrettyPrinting().create().toJson(this.round));
-            return true;
-        case "tp": {
-            if (args.length != 2) return false;
-            if (!(sender instanceof Player)) throw new IllegalStateException("Player expected");
-            int idx = Integer.parseInt(args[1]);
-            if (idx < 0 || idx >= this.easterEggs.size()) throw new ArrayIndexOutOfBoundsException("Illegal egg index: " + idx);
-            EasterEgg easterEgg = this.easterEggs.get(idx);
-            Player player = (Player)sender;
-            Location loc = easterEgg.toLocation();
-            player.teleport(loc);
-            player.sendMessage("Teleported to egg #" + idx + " (" + loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ() + ") [" + (easterEgg.isDisabled() ? "disabled" : "enabled") + "]");
-            return true;
-        }
-        case "hi": {
-            List<UUID> uuids = new ArrayList<>(this.scores.scores.keySet());
-            Collections.sort(uuids, (a, b) -> Integer.compare(this.scores.scores.get(b),
-                                                              this.scores.scores.get(a)));
-            int i = 0;
-            sender.sendMessage("");
-            sender.sendMessage("Easter Highscore");
-            for (UUID uuid : uuids) {
-                i += 1;
-                sender.sendMessage("" + i + ") "
-                                   + this.scores.scores.get(uuid) + " "
-                                   + GenericEvents.cachedPlayerName(uuid));
-                if (i >= 10) break;
-            }
-            return true;
-        }
-        default:
-            return false;
-        }
+        return false;
     }
 
     void saveScores() {
@@ -260,7 +215,6 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
 
     void announce(World world, String txt) {
         for (Player player : world.getPlayers()) {
-            player.sendMessage(txt);
             player.sendActionBar(txt);
         }
     }

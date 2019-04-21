@@ -18,8 +18,13 @@ commands:
       /easter info - round info
       /easter tp <idx> - Warp to egg
       /easter hi - Highscore
+  hi:
+    description: Highscore
+    permission: easter.hi
+    usage: |-
+      /hi
 permissions:
   easter.admin:
     description: Use /easter
-    children:
-      easter.child: true
+  easter.hi:
+    description: Use /hi
