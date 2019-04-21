@@ -306,7 +306,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         saveRound();
         // Effect
         Location loc = easterEgg.toLocation();
-        int rabbitc = random.nextInt(5) + 1;
+        int rabbitc = random.nextInt(3) + 1;
         for (int i = 0; i < rabbitc; i += 1) {
             Location loc2 = loc.clone();
             loc2.add(random.nextDouble() * 0.5 - random.nextDouble() * 0.5,
@@ -345,7 +345,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
             + loc.getBlockX() + " "
             + loc.getBlockY() + " "
             + loc.getBlockZ()
-            + " {ActiveEffects:[{Id:14,Amplifier:0,Duration:999999}],Passengers:[{id:sheep, CustomName:\"\\\"jeb_\\\"\"}]}";
+            + " {PersistenceRequired:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:999999}],Passengers:[{id:sheep,PersistenceRequired:0,CustomName:\"\\\"jeb_\\\"\"}]}";
         getServer().dispatchCommand(getServer().getConsoleSender(), cmd);
         Firework firework = loc.getWorld().spawn(loc, Firework.class, fw -> {
                 FireworkMeta meta = fw.getFireworkMeta();
