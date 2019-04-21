@@ -341,29 +341,26 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                 b.setPersistent(false);
                 b.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 9999, 0, true, false));
             });
-        String cmd = "summon bat "
+        String cmd = "execute at " + player.getName() + " run summon bat "
             + loc.getBlockX() + " "
             + loc.getBlockY() + " "
             + loc.getBlockZ()
             + " {ActiveEffects:[{Id:14,Amplifier:0,Duration:999999}],Passengers:[{id:sheep, CustomName:\"\\\"jeb_\\\"\"}]}";
+        getServer().dispatchCommand(getServer().getConsoleSender(), cmd);
         Firework firework = loc.getWorld().spawn(loc, Firework.class, fw -> {
                 FireworkMeta meta = fw.getFireworkMeta();
-                int effectc = random.nextInt(10) + 5;
-                for (int i = 0; i < effectc; i += 1) {
-                    meta.addEffect(FireworkEffect.builder()
-                                   .with(FireworkEffect.Type.BALL)
-                                   .withColor(Color.fromRGB(random.nextInt(256),
-                                                            random.nextInt(256),
-                                                            random.nextInt(256)))
-                                   .build());
-                }
+                meta.addEffect(FireworkEffect.builder()
+                               .with(FireworkEffect.Type.BALL)
+                               .withColor(Color.fromRGB(random.nextInt(256),
+                                                        random.nextInt(256),
+                                                        random.nextInt(256)))
+                               .build());
                 fw.setFireworkMeta(meta);
             });
         getServer().getScheduler().runTaskLater(this, () -> {
                 firework.detonate();
             }, 60L);
         player.playSound(player.getEyeLocation(), Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.MASTER, 0.5f, 2.0f);
-        getServer().dispatchCommand(getServer().getConsoleSender(), cmd);
         int remain = this.round.hidden - this.round.found;
         if (remain > 0) {
             announce(player.getWorld(),
