@@ -301,19 +301,19 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
             + loc.getBlockZ()
             + " {Silent:1,PersistenceRequired:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:999999}],Passengers:[{id:sheep,PersistenceRequired:0,CustomName:\"\\\"jeb_\\\"\"}]}";
         getServer().dispatchCommand(getServer().getConsoleSender(), cmd);
-        Firework firework = loc.getWorld().spawn(loc, Firework.class, fw -> {
-                FireworkMeta meta = fw.getFireworkMeta();
-                meta.addEffect(FireworkEffect.builder()
-                               .with(FireworkEffect.Type.BALL)
-                               .withColor(Color.fromRGB(random.nextInt(256),
-                                                        random.nextInt(256),
-                                                        random.nextInt(256)))
-                               .build());
-                fw.setFireworkMeta(meta);
-            });
-        getServer().getScheduler().runTaskLater(this, () -> {
-                firework.detonate();
-            }, 60L);
+        // Firework firework = loc.getWorld().spawn(loc, Firework.class, fw -> {
+        //         FireworkMeta meta = fw.getFireworkMeta();
+        //         meta.addEffect(FireworkEffect.builder()
+        //                        .with(FireworkEffect.Type.BALL)
+        //                        .withColor(Color.fromRGB(random.nextInt(256),
+        //                                                 random.nextInt(256),
+        //                                                 random.nextInt(256)))
+        //                        .build());
+        //         fw.setFireworkMeta(meta);
+        //     });
+        // getServer().getScheduler().runTaskLater(this, () -> {
+        //         firework.detonate();
+        //     }, 60L);
         player.playSound(player.getEyeLocation(), Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.MASTER, 0.5f, 2.0f);
         int remain = this.round.hidden - this.round.found;
         if (remain > 0) {
