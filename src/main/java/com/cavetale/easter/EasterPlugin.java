@@ -19,8 +19,6 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
 import org.bukkit.ChatColor;
-import org.bukkit.Color;
-import org.bukkit.FireworkEffect;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -31,13 +29,12 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Bat;
-import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Rabbit;
+import org.bukkit.entity.Sheep;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -261,46 +258,52 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         // Effect
         Location loc = easterEgg.toLocation();
         int rabbitc = random.nextInt(3) + 1;
-        for (int i = 0; i < rabbitc; i += 1) {
-            Location loc2 = loc.clone();
-            loc2.add(random.nextDouble() * 0.5 - random.nextDouble() * 0.5,
-                     random.nextDouble() * 0.5,
-                     random.nextDouble() * 0.5 - random.nextDouble() * 0.5);
-            Rabbit rabbit2 = loc.getWorld().spawn(loc2, Rabbit.class, rabbit -> {
-                    rabbit.setPersistent(false);
-                    rabbit.setRemoveWhenFarAway(true);
-                    rabbit.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 9999, 0, true, false));
-                    rabbit.setInvulnerable(true);
-                    switch (random.nextInt(6)) {
-                    case 0: rabbit.setRabbitType(Rabbit.Type.BLACK); break;
-                    case 1: rabbit.setRabbitType(Rabbit.Type.BLACK_AND_WHITE); break;
-                    case 2: rabbit.setRabbitType(Rabbit.Type.BROWN); break;
-                    case 3: rabbit.setRabbitType(Rabbit.Type.GOLD); break;
-                    case 4: rabbit.setRabbitType(Rabbit.Type.SALT_AND_PEPPER); break;
-                    case 5: rabbit.setRabbitType(Rabbit.Type.WHITE); break;
-                    default: break;
-                    }
-                    if (random.nextBoolean()) {
-                        rabbit.setBaby();
-                    }
-                });
-            double v = 0.25;
-            Vector velo = new Vector(random.nextDouble() * v - random.nextDouble() * v,
-                                     v,
-                                     random.nextDouble() * v - random.nextDouble() * v);
-            rabbit2.setVelocity(velo);
-        }
+        Location loc2 = loc.clone();
+        loc2.add(random.nextDouble() * 0.5 - random.nextDouble() * 0.5,
+                 random.nextDouble() * 0.5,
+                 random.nextDouble() * 0.5 - random.nextDouble() * 0.5);
+        Rabbit rabbit = loc.getWorld().spawn(loc2, Rabbit.class, r -> {
+                r.setPersistent(false);
+                r.setRemoveWhenFarAway(true);
+                r.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 9999, 0, true, false));
+                r.setInvulnerable(true);
+                switch (random.nextInt(6)) {
+                case 0: r.setRabbitType(Rabbit.Type.BLACK); break;
+                case 1: r.setRabbitType(Rabbit.Type.BLACK_AND_WHITE); break;
+                case 2: r.setRabbitType(Rabbit.Type.BROWN); break;
+                case 3: r.setRabbitType(Rabbit.Type.GOLD); break;
+                case 4: r.setRabbitType(Rabbit.Type.SALT_AND_PEPPER); break;
+                case 5: r.setRabbitType(Rabbit.Type.WHITE); break;
+                default: break;
+                }
+                if (random.nextBoolean()) {
+                    r.setBaby();
+                }
+            });
+        double v = 0.25;
+        Vector velo = new Vector(random.nextDouble() * v - random.nextDouble() * v,
+                                 v,
+                                 random.nextDouble() * v - random.nextDouble() * v);
+        rabbit.setVelocity(velo);
         loc = loc.add(0.0, 1.0, 0.0);
         Bat bat = loc.getWorld().spawn(loc, Bat.class, b -> {
+                b.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 999999, 0, true, false));
+                b.setSilent(true);
                 b.setPersistent(false);
-                b.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 9999, 0, true, false));
+                b.setRemoveWhenFarAway(true);
             });
-        String cmd = "execute at " + player.getName() + " run summon bat "
-            + loc.getBlockX() + " "
-            + loc.getBlockY() + " "
-            + loc.getBlockZ()
-            + " {Silent:1,PersistenceRequired:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:999999}],Passengers:[{id:sheep,PersistenceRequired:0,CustomName:\"\\\"jeb_\\\"\"}]}";
-        getServer().dispatchCommand(getServer().getConsoleSender(), cmd);
+        Sheep sheep = loc.getWorld().spawn(loc, Sheep.class, s -> {
+                s.setSilent(true);
+                s.setPersistent(false);
+                s.setRemoveWhenFarAway(true);
+            });
+        bat.addPassenger(sheep);
+        getServer().getScheduler().runTaskLater(this, () -> {
+                rabbit.remove();
+                bat.remove();
+                sheep.remove();
+            }, 400L);
+        getServer().dispatchCommand(getServer().getConsoleSender(), "data merge entity " + sheep.getUniqueId() + " {CustomName:\"\\\"jeb_\\\"\"}");
         // Firework firework = loc.getWorld().spawn(loc, Firework.class, fw -> {
         //         FireworkMeta meta = fw.getFireworkMeta();
         //         meta.addEffect(FireworkEffect.builder()
