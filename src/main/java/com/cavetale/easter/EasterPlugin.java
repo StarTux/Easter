@@ -179,7 +179,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         this.round.hidden = this.round.found + 10;
         this.round.found = 0;
         getLogger().info("Started round " + this.round.roundNumber + " with " + this.round.hidden + " eggs.");
-        announce(ChatColor.LIGHT_PURPLE + "The Easter Bunny just visited the spawn!");
+        announce(ChatColor.LIGHT_PURPLE + "The Easter Bunny just visited spawn and hid " + this.round.hidden + " eggs!");
     }
 
     void setupRound() {
@@ -351,7 +351,9 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                 }
                 fw.setFireworkMeta(meta);
             });
-        getServer().getScheduler().runTaskLater(this, () -> { firework.detonate(); }, 60L);
+        getServer().getScheduler().runTaskLater(this, () -> {
+                firework.detonate();
+            }, 60L);
         player.playSound(player.getEyeLocation(), Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.MASTER, 0.5f, 2.0f);
         getServer().dispatchCommand(getServer().getConsoleSender(), cmd);
         announce("" + ChatColor.LIGHT_PURPLE + player.getName() + " found an easter egg!");
