@@ -345,7 +345,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
             + loc.getBlockX() + " "
             + loc.getBlockY() + " "
             + loc.getBlockZ()
-            + " {PersistenceRequired:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:999999}],Passengers:[{id:sheep,PersistenceRequired:0,CustomName:\"\\\"jeb_\\\"\"}]}";
+            + " {Silent:1,PersistenceRequired:0,ActiveEffects:[{Id:14,Amplifier:0,Duration:999999}],Passengers:[{id:sheep,PersistenceRequired:0,CustomName:\"\\\"jeb_\\\"\"}]}";
         getServer().dispatchCommand(getServer().getConsoleSender(), cmd);
         Firework firework = loc.getWorld().spawn(loc, Firework.class, fw -> {
                 FireworkMeta meta = fw.getFireworkMeta();
