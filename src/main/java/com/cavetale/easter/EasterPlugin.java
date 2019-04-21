@@ -258,6 +258,13 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         }
     }
 
+    void announce(World world, String txt) {
+        for (Player player : world.getPlayers()) {
+            player.sendMessage(txt);
+            player.sendActionBar(txt);
+        }
+    }
+
     void announce(String txt) {
         for (Player player : getServer().getOnlinePlayers()) {
             player.sendMessage(txt);
@@ -292,7 +299,8 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         // Score
         UUID uuid = player.getUniqueId();
         Integer score = this.scores.scores.get(uuid);
-        this.scores.scores.put(uuid, score == null ? 1 : score + 1);
+        score = score == null ? 1 : score + 1;
+        this.scores.scores.put(uuid, score);
         saveScores();
         this.round.found += 1;
         saveRound();
@@ -356,6 +364,14 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
             }, 60L);
         player.playSound(player.getEyeLocation(), Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.MASTER, 0.5f, 2.0f);
         getServer().dispatchCommand(getServer().getConsoleSender(), cmd);
-        announce("" + ChatColor.LIGHT_PURPLE + player.getName() + " found an easter egg!");
+        int remain = this.round.hidden - this.round.found;
+        if (remain > 0) {
+            announce(player.getWorld(),
+                     "" + ChatColor.LIGHT_PURPLE + player.getName() + " found an easter egg! There are " + remain + " more to find.");
+        } else {
+            announce(player.getWorld(),
+                     "" + ChatColor.LIGHT_PURPLE + player.getName() + " found the final easter egg!");
+        }
+        player.sendMessage(ChatColor.LIGHT_PURPLE + "Your score is now " + score + ".");
     }
 }
