@@ -7,7 +7,7 @@
 
   <packaging>jar</packaging>
   <name>Easter</name>
-  <url>https://cavetale.com</url>
+  <url>https://github.com/StarTux/Easter</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -15,12 +15,6 @@
   <build>
     <finalName>${project.name}</finalName>
     <plugins>
-
-      <!-- Surefire for Testing -->
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.22.0</version>
-      </plugin>
 
       <!-- Java 8 -->
       <plugin>
@@ -61,8 +55,9 @@
     <dependency>
       <groupId>com.destroystokyo.paper</groupId>
       <artifactId>paper-api</artifactId>
-      <version>1.13.2-R0.1-SNAPSHOT</version>
+      <version>1.15.2-R0.1-SNAPSHOT</version>
       <scope>provided</scope>
+      <optional>true</optional>
     </dependency>
 
     <!-- Lombok -->
@@ -78,6 +73,7 @@
       <groupId>com.cavetale.dirty</groupId>
       <artifactId>dirty</artifactId>
       <version>0.1-SNAPSHOT</version>
+      <optional>true</optional>
     </dependency>
 
     <!-- Mirage -->
@@ -85,6 +81,7 @@
       <groupId>com.cavetale.mirage</groupId>
       <artifactId>mirage</artifactId>
       <version>0.1-SNAPSHOT</version>
+      <optional>true</optional>
     </dependency>
 
     <!-- GenericEvents -->
@@ -92,6 +89,7 @@
       <groupId>com.winthier.generic_events</groupId>
       <artifactId>generic_events</artifactId>
       <version>0.1-SNAPSHOT</version>
+      <optional>true</optional>
     </dependency>
 
   </dependencies>
