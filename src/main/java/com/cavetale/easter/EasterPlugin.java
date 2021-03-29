@@ -9,6 +9,7 @@ import com.cavetale.easter.util.Json;
 import com.cavetale.mytems.Mytems;
 import com.cavetale.sidebar.PlayerSidebarEvent;
 import com.cavetale.sidebar.Priority;
+import com.winthier.playercache.PlayerCache;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -315,7 +316,8 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
             Player player = (Player) event.getDamager();
             if (!(player.hasPermission("easter.hunt"))) return;
             if (!Objects.equals(player.getUniqueId(), easterEgg.owner)) {
-                player.sendMessage(Component.text("This egg is not for you!").color(NamedTextColor.RED));
+                String name = PlayerCache.nameForUuid(easterEgg.owner);
+                player.sendMessage(Component.text("This egg belongs to " + name + "!").color(NamedTextColor.RED));
                 return;
             }
             // Drop item frame
