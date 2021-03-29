@@ -134,16 +134,23 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
             getLogger().info("Spawning egg for " + player.getName() + " at " + currentEgg);
             Block block = currentEgg.toBlock(save.getRegion().toWorld());
             Location location = block.getLocation().add(0.5, 0.0, 0.5).setDirection(new Vector(0.0, 1.0, 0.0));
-            ItemFrame itemFrame = location.getWorld().spawn(location, ItemFrame.class, e -> {
-                    e.setFacingDirection(BlockFace.UP);
-                    e.setPersistent(false);
-                    e.setItem(randomEasterEgg());
-                    e.setItemDropChance(0.0f);
-                    e.setVisible(false);
-                    Rotation[] rotations = Rotation.values();
-                    Rotation rotation = rotations[random.nextInt(rotations.length)];
-                    e.setRotation(rotation);
-                });
+            ItemFrame itemFrame;
+            try {
+                itemFrame = location.getWorld().spawn(location, ItemFrame.class, e -> {
+                        e.setFacingDirection(BlockFace.UP);
+                        e.setPersistent(false);
+                        e.setItem(randomEasterEgg());
+                        e.setItemDropChance(0.0f);
+                        e.setVisible(false);
+                        Rotation[] rotations = Rotation.values();
+                        Rotation rotation = rotations[random.nextInt(rotations.length)];
+                        e.setRotation(rotation);
+                    });
+            } catch (IllegalArgumentException iae) {
+                // Happens above fence posts?
+                user.setCurrentEgg(null);
+                return;
+            }
             easterEgg = new EasterEgg(player.getUniqueId(), itemFrame);
             easterEggMap.put(currentEgg, easterEgg);
             return;
