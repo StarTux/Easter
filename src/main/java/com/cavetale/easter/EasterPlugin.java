@@ -190,8 +190,8 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         double dz = Math.sin(angle) * 16.0;
         location = location.add(dx, 0, dz);
         Block block = location.getBlock();
-        while (block.isPassable()) block = block.getRelative(0, -1, 0);
-        while (!block.isEmpty()) block = block.getRelative(0, 1, 0);
+        while (block.isPassable() && block.getY() > 0) block = block.getRelative(0, -1, 0);
+        while (!block.isEmpty() && block.getY() < 255) block = block.getRelative(0, 1, 0);
         if (!block.isPassable()) {
             return false;
         }
