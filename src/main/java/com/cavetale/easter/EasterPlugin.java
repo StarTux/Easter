@@ -421,7 +421,10 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
             } else {
                 lines.add(ChatColor.GREEN + "Visit the Easter World!");
             }
-        } else if (user.getEggCooldown() != 0L) {
+        } else if (user.getEggCooldown() == 0L) {
+            lines.add(ChatColor.GREEN + "Easter Egg Ready!");
+            lines.add(ChatColor.GREEN + "Visit the Easter World!");
+        } else {
             long duration = Math.max(0L, user.getEggCooldown() - System.currentTimeMillis());
             long seconds = duration / 1000L;
             long minutes = seconds / 60L;
