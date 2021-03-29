@@ -48,6 +48,18 @@
       <url>https://cavetale.com/jenkins/plugin/repository/everything/</url>
     </repository>
 
+    <!-- WorldEdit Repo -->
+    <repository>
+      <id>sk89q-snapshots</id>
+      <url>http://maven.sk89q.com/artifactory/repo</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+
   </repositories>
   <dependencies>
 
@@ -55,41 +67,55 @@
     <dependency>
       <groupId>com.destroystokyo.paper</groupId>
       <artifactId>paper-api</artifactId>
-      <version>1.15.2-R0.1-SNAPSHOT</version>
+      <version>1.16.5-R0.1-SNAPSHOT</version>
       <scope>provided</scope>
-      <optional>true</optional>
     </dependency>
 
     <!-- Lombok -->
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>1.18.2</version>
+      <version>1.18.16</version>
       <scope>provided</scope>
     </dependency>
 
-    <!-- Dirty -->
+    <!-- Mytems -->
     <dependency>
-      <groupId>com.cavetale.dirty</groupId>
-      <artifactId>dirty</artifactId>
+      <groupId>com.cavetale.mytems</groupId>
+      <artifactId>mytems</artifactId>
       <version>0.1-SNAPSHOT</version>
-      <optional>true</optional>
+      <scope>provided</scope>
     </dependency>
 
-    <!-- Mirage -->
+    <!-- SQL -->
     <dependency>
-      <groupId>com.cavetale.mirage</groupId>
-      <artifactId>mirage</artifactId>
+      <groupId>com.winthier.sql</groupId>
+      <artifactId>sql</artifactId>
       <version>0.1-SNAPSHOT</version>
-      <optional>true</optional>
+      <scope>provided</scope>
     </dependency>
 
-    <!-- GenericEvents -->
+    <!-- Core -->
     <dependency>
-      <groupId>com.winthier.generic_events</groupId>
-      <artifactId>generic_events</artifactId>
+      <groupId>com.cavetale.core</groupId>
+      <artifactId>core</artifactId>
       <version>0.1-SNAPSHOT</version>
-      <optional>true</optional>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- Sidebar -->
+    <dependency>
+      <groupId>com.cavetale.sidebar</groupId>
+      <artifactId>sidebar</artifactId>
+      <version>0.1-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- WorldEdit -->
+    <dependency>
+      <groupId>com.sk89q.worldedit</groupId>
+      <artifactId>worldedit-bukkit</artifactId>
+      <version>7.2.0-SNAPSHOT</version>
     </dependency>
 
   </dependencies>

@@ -5,26 +5,33 @@ api-version: 1.13
 description: Easter Plugin
 author: StarTux
 website: https://cavetale.com
-depend: [Mirage, Dirty, GenericEvents]
+depend: [WorldEdit, Mytems, SQL, Core]
 softdepend: []
+
 commands:
+
   easter:
     description: Easter Command
+    permission: easter.easter
+    usage: |-
+      /easter
+
+  easteradmin:
+    description: Easter Command
     permission: easter.admin
-    permission-message: You do not have permission!
     usage: |-
-      /easter reload - reload config
-      /easter start - start new round
-      /easter info - round info
-      /easter tp <idx> - Warp to egg
-      /easter hi - Highscore
-  hi:
-    description: Highscore
-    permission: easter.hi
-    usage: |-
-      /hi
+      /easteradmin
+
 permissions:
-  easter.admin:
+
+  easter.easter:
     description: Use /easter
-  easter.hi:
-    description: Use /hi
+    default: op
+
+  easter.admin:
+    description: Use /easteradmin
+    default: op
+
+  easter.hunt:
+    description: Hunt easter eggs
+    default: false
