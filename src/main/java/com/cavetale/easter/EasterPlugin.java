@@ -296,11 +296,11 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
 
     String th(int in) {
         String out = "" + in;
-        switch (in) {
-        case 1: return "1st";
-        case 2: return "2nd";
-        case 3: return "3rd";
-        default: return in + "th";
+        switch (out.charAt(out.length() - 1)) {
+        case '1': return out + "st";
+        case '2': return out + "nd";
+        case '3': return out + "rd";
+        default: return out + "th";
         }
     }
 
