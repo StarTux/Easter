@@ -9,6 +9,7 @@ import com.cavetale.easter.util.Json;
 import com.cavetale.mytems.Mytems;
 import com.cavetale.sidebar.PlayerSidebarEvent;
 import com.cavetale.sidebar.Priority;
+import com.winthier.generic_events.PlayerCanBuildEvent;
 import com.winthier.playercache.PlayerCache;
 import java.io.File;
 import java.util.ArrayList;
@@ -294,6 +295,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
     }
 
     String th(int in) {
+        String out = "" + in;
         switch (in) {
         case 1: return "1st";
         case 2: return "2nd";
@@ -444,6 +446,14 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         }
         if (!lines.isEmpty()) {
             event.addLines(this, Priority.HIGH, lines);
+        }
+    }
+
+    @EventHandler
+    void onPlayerCanBuild(PlayerCanBuildEvent event) {
+        if (save.getRegion() == null) return;
+        if (save.getRegion().contains(event.getBlock())) {
+            event.setCancelled(true);
         }
     }
 }
