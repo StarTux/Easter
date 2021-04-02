@@ -294,13 +294,17 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         event.setCancelled(true);
     }
 
-    String th(int in) {
-        String out = "" + in;
+    static String th(int in) {
+        String out = Integer.toString(in);
         switch (out.charAt(out.length() - 1)) {
-        case '1': return out + "st";
-        case '2': return out + "nd";
-        case '3': return out + "rd";
-        default: return out + "th";
+        case '1':
+            return out.concat(out.endsWith("11") ? "th" : "st");
+        case '2':
+            return out.concat(out.endsWith("12") ? "th" : "nd");
+        case '3':
+            return out.concat(out.endsWith("13") ? "th" : "rd");
+        default:
+            return out.concat("th");
         }
     }
 
