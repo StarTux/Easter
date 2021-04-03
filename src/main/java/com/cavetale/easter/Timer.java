@@ -34,11 +34,10 @@ public final class Timer {
         Bukkit.getScheduler().runTaskTimer(EasterPlugin.instance, Timer::update, 200L, 200L);
     }
 
-    public static boolean isEasterSeason() {
-        // Easter 2021 is April 4
-        return month < 4 || (month == 4 && day <= 4);
-    }
-
+    /**
+     * Counting the day from the start of the event to the end. The
+     * day after Easter Monday is the finale. Any other day yields 0.
+     */
     public static int getEasterDay() {
         switch (dayId) {
         case 20210329: return 1;
@@ -48,11 +47,13 @@ public final class Timer {
         case 20210402: return 5;
         case 20210403: return 6;
         case 20210404: return 7;
+        case 20210405: return 8;
+        case 20210406: return 9;
         default: return 0;
         }
     }
 
     public static int getTotalEggs() {
-        return getEasterDay() * 10;
+        return Math.min(8, getEasterDay()) * 10;
     }
 }
