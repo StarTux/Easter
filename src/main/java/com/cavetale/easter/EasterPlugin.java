@@ -121,7 +121,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                     Mytems.PURPLE_EASTER_EGG,
                     Mytems.YELLOW_EASTER_EGG);
         Mytems mytems = mytemsList.get(random.nextInt(mytemsList.size()));
-        return mytems.getMytem().getItem();
+        return mytems.createItemStack();
     }
 
     void tickPlayer(Player player, User user) {
