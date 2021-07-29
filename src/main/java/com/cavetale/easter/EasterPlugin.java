@@ -1,5 +1,6 @@
 package com.cavetale.easter;
 
+import com.cavetale.core.event.block.PlayerCanBuildEvent;
 import com.cavetale.easter.struct.Region;
 import com.cavetale.easter.struct.Save;
 import com.cavetale.easter.struct.User;
@@ -9,7 +10,6 @@ import com.cavetale.easter.util.Json;
 import com.cavetale.mytems.Mytems;
 import com.cavetale.sidebar.PlayerSidebarEvent;
 import com.cavetale.sidebar.Priority;
-import com.winthier.generic_events.PlayerCanBuildEvent;
 import com.winthier.playercache.PlayerCache;
 import java.io.File;
 import java.util.ArrayList;
