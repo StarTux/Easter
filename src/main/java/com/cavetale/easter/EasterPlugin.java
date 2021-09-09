@@ -1,6 +1,7 @@
 package com.cavetale.easter;
 
-import com.cavetale.core.event.block.PlayerCanBuildEvent;
+import com.cavetale.core.event.block.PlayerBlockAbilityQuery;
+import com.cavetale.core.event.entity.PlayerEntityAbilityQuery;
 import com.cavetale.easter.struct.Region;
 import com.cavetale.easter.struct.Save;
 import com.cavetale.easter.struct.User;
@@ -454,10 +455,18 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
     }
 
     @EventHandler
-    void onPlayerCanBuild(PlayerCanBuildEvent event) {
+    void onPlayerBlockAbility(PlayerBlockAbilityQuery query) {
         if (save.getRegion() == null) return;
-        if (save.getRegion().contains(event.getBlock())) {
-            event.setCancelled(true);
+        if (save.getRegion().contains(query.getBlock())) {
+            query.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    void onPlayerEntityAbiltiy(PlayerEntityAbilityQuery query) {
+        if (save.getRegion() == null) return;
+        if (save.getRegion().contains(query.getEntity().getLocation())) {
+            query.setCancelled(true);
         }
     }
 }
