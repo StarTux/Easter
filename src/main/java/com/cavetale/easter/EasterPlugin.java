@@ -22,7 +22,7 @@ import java.util.Objects;
 import java.util.Random;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.md_5.bungee.api.ChatColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.DyeColor;
@@ -420,37 +420,43 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         if (Timer.getEasterDay() == 0) return;
         User user = save.userOf(player.getUniqueId());
         Vec3i currentEgg = user.getCurrentEgg();
-        List<String> lines = new ArrayList<>();
+        List<Component> lines = new ArrayList<>();
         if (currentEgg != null) {
-            lines.add(ChatColor.GREEN + "Easter Egg Ready!");
+            lines.add(Component.text("Easter Egg Ready!", NamedTextColor.GREEN));
             if (save.getRegion().contains(player.getLocation())) {
                 int distance = Vec3i.of(player.getLocation()).distanceSquared(currentEgg);
                 if (distance < 12 * 12) {
-                    lines.add(ChatColor.GREEN + "Hint " + ChatColor.GOLD + ChatColor.BOLD + "HOT");
+                    lines.add(Component.text("Hint ", NamedTextColor.GREEN)
+                              .append(Component.text("HOT", NamedTextColor.GOLD, TextDecoration.BOLD)));
                 } else if (distance < 24 * 24) {
-                    lines.add(ChatColor.GREEN + "Hint " + ChatColor.GOLD + ChatColor.ITALIC + "Warmer");
+                    lines.add(Component.text("Hint ", NamedTextColor.GREEN)
+                              .append(Component.text("Warmer", NamedTextColor.GOLD, TextDecoration.ITALIC)));
                 } else if (distance < 48 * 48) {
-                    lines.add(ChatColor.GREEN + "Hint " + ChatColor.YELLOW + ChatColor.ITALIC + "Warm");
+                    lines.add(Component.text("Hint ", NamedTextColor.GREEN)
+                              .append(Component.text("Warm", NamedTextColor.YELLOW, TextDecoration.ITALIC)));
                 } else {
-                    lines.add(ChatColor.GREEN + "Hint " + ChatColor.AQUA + ChatColor.ITALIC + "Cold");
+                    lines.add(Component.text("Hint ", NamedTextColor.GREEN)
+                              .append(Component.text("Cold", NamedTextColor.AQUA, TextDecoration.ITALIC)));
                 }
             } else {
-                lines.add(ChatColor.GREEN + "Visit the Easter World!");
+                lines.add(Component.text("Visit the Easter World!", NamedTextColor.GREEN));
             }
         } else if (user.getEggCooldown() == 0L) {
-            lines.add(ChatColor.GREEN + "Easter Egg Ready!");
-            lines.add(ChatColor.GREEN + "Visit the Easter World!");
+            lines.add(Component.text("Easter Egg Ready!", NamedTextColor.GREEN));
+            lines.add(Component.text("Visit the Easter World!", NamedTextColor.GREEN));
         } else {
             long duration = Math.max(0L, user.getEggCooldown() - System.currentTimeMillis());
             long seconds = duration / 1000L;
             long minutes = seconds / 60L;
             seconds %= 60L;
-            lines.add(ChatColor.GREEN + "Easter Egg in "
-                      + ChatColor.WHITE + minutes + ChatColor.GRAY + "m "
-                      + ChatColor.WHITE + seconds + ChatColor.GRAY + "s");
+            lines.add(Component.text().color(NamedTextColor.WHITE)
+                      .append(Component.text("Easter Egg in ", NamedTextColor.GREEN))
+                      .append(Component.text(minutes)).append(Component.text("m ", NamedTextColor.GRAY))
+                      .append(Component.text(seconds)).append(Component.text("s", NamedTextColor.GRAY))
+                      .build());
         }
         if (!lines.isEmpty()) {
-            event.addLines(this, Priority.HIGH, lines);
+            event.add(this, Priority.HIGH, lines);
         }
     }
 
