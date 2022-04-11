@@ -73,6 +73,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         Bukkit.getScheduler().runTaskTimer(this, this::tickPlayers, 20L, 20L);
         Bukkit.getPluginManager().registerEvents(this, this);
         new EasterAdminCommand(this).enable();
+        new EasterCommand(this).enable();
     }
 
     @Override

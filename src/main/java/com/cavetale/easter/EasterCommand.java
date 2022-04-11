@@ -1,22 +1,29 @@
 package com.cavetale.easter;
 
-import java.util.List;
-import lombok.RequiredArgsConstructor;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabExecutor;
+import com.cavetale.core.command.AbstractCommand;
+import com.cavetale.core.command.CommandWarn;
+import org.bukkit.World;
+import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 
-@RequiredArgsConstructor
-final class EasterCommand implements TabExecutor {
-    private final EasterPlugin plugin;
-
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String alias, String[] args) {
-        return false;
+public final class EasterCommand extends AbstractCommand<EasterPlugin> {
+    protected EasterCommand(final EasterPlugin plugin) {
+        super(plugin, "easter");
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        return null;
+    protected void onEnable() {
+        rootNode.denyTabCompletion()
+            .description("Warp to the Easter world")
+            .playerCaller(this::tp);
+    }
+
+    private void tp(Player player) {
+        World world = plugin.save.getRegion().toWorld();
+        if (world == null) throw new CommandWarn("Easter is over!");
+        player.teleport(world.getSpawnLocation(), TeleportCause.COMMAND);
+        player.sendMessage(text("Teleporting to the Easter world", LIGHT_PURPLE));
     }
 }
