@@ -7,16 +7,18 @@ import com.cavetale.easter.struct.Region;
 import com.cavetale.easter.struct.User;
 import com.cavetale.easter.struct.Vec3i;
 import com.cavetale.easter.util.WorldEdit;
+import com.winthier.playercache.PlayerCache;
+import java.time.Duration;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 @RequiredArgsConstructor
 final class EasterAdminCommand implements TabExecutor {
@@ -29,8 +31,9 @@ final class EasterAdminCommand implements TabExecutor {
             .playerCaller(this::setArea);
         rootNode.addChild("debug").denyTabCompletion()
             .senderCaller(this::debug);
-        rootNode.addChild("cheat").denyTabCompletion()
-            .playerCaller(this::cheat);
+        rootNode.addChild("info").arguments("[player]")
+            .description("Player info")
+            .senderCaller(this::info);
         plugin.getCommand("easteradmin").setExecutor(this);
         return this;
     }
@@ -45,7 +48,7 @@ final class EasterAdminCommand implements TabExecutor {
         return rootNode.complete(sender, command, alias, args);
     }
 
-    boolean setArea(Player player, String[] args) {
+    private boolean setArea(Player player, String[] args) {
         Cuboid cuboid = WorldEdit.getSelection(player);
         if (cuboid == null) throw new CommandWarn("Make a selection first!");
         Region region = new Region(player.getWorld().getName(), cuboid);
@@ -56,27 +59,51 @@ final class EasterAdminCommand implements TabExecutor {
         return true;
     }
 
-    boolean debug(CommandSender sender, String[] args) {
-        sender.sendMessage("dayId = " + Timer.getDayId());
-        sender.sendMessage("easterDay = " + Timer.getEasterDay());
-        sender.sendMessage("totalEggs = " + Timer.getTotalEggs());
+    private boolean debug(CommandSender sender, String[] args) {
+        sender.sendMessage("dayId: " + Timer.getDayId());
+        sender.sendMessage("easterDay: " + Timer.getEasterDay() + "/" + Timer.DAYS);
+        sender.sendMessage("totalEggs: " + Timer.getTotalEggs());
         return true;
     }
 
-    boolean cheat(Player player, String[] args) {
-        User user = plugin.save.userOf(player.getUniqueId());
+    private boolean info(CommandSender sender, String[] args) {
+        if (args.length > 1) return false;
+        User user;
+        String userName;
+        if (args.length == 1) {
+            PlayerCache player = PlayerCache.forArg(args[0]);
+            if (player == null) {
+                throw new CommandWarn("[easteradmin:cheat] player not found: " + args[0]);
+            }
+            user = plugin.save.userOf(player.uuid);
+            userName = player.name;
+        } else {
+            if (!(sender instanceof Player player)) {
+                throw new CommandWarn("[easteradmin:cheat] player expected");
+            }
+            user = plugin.save.userOf(player.getUniqueId());
+            userName = player.getName();
+        }
+        sender.sendMessage(text("Eggs: " + user.getRegularEggsDiscovered()
+                                + "/" + user.getTotalEggsDiscovered(), YELLOW));
+        long now = System.currentTimeMillis();
+        long egg = Math.max(user.getEggCooldown(), now) - now;
+        long mob = Math.max(user.getSpawnCooldown(), now) - now;
+        sender.sendMessage(text("Cooldowns:"
+                                + " egg=" + Duration.ofMillis(egg).toSeconds() + "s"
+                                + " mob=" + Duration.ofMillis(mob).toSeconds() + "s",
+                                YELLOW));
         Vec3i currentEgg = user.getCurrentEgg();
         if (currentEgg == null) {
-            player.sendMessage(Component.text("No current egg!").color(NamedTextColor.RED));
-            return true;
+            sender.sendMessage(text("No current egg", RED));
+        } else {
+            String cmd = "/tp"
+                + " " + currentEgg.getX()
+                + " " + currentEgg.getY()
+                + " " + currentEgg.getZ();
+            sender.sendMessage(text("Current egg: " + currentEgg, YELLOW)
+                               .clickEvent(ClickEvent.suggestCommand(cmd)));
         }
-        String cmd = "/tp"
-            + " " + currentEgg.getX()
-            + " " + currentEgg.getY()
-            + " " + currentEgg.getZ();
-        player.sendMessage(Component.text("Current egg: " + currentEgg)
-                           .color(NamedTextColor.GREEN)
-                           .clickEvent(ClickEvent.suggestCommand(cmd)));
         return true;
     }
 }

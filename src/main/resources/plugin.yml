@@ -2,13 +2,13 @@ main: com.cavetale.easter.EasterPlugin
 name: Easter
 
 version: 0.1
-api-version: 1.17
+api-version: 1.18
 
 description: Easter Plugin
 author: StarTux
 website: https://cavetale.com
-depend: [Core, WorldEdit, Mytems, Sidebar]
 
+depend: [Core, PlayerCache, WorldEdit, Mytems, Sidebar]
 softdepend: []
 
 commands:

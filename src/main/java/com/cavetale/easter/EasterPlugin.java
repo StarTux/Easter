@@ -8,11 +8,12 @@ import com.cavetale.easter.struct.User;
 import com.cavetale.easter.struct.Vec3i;
 import com.cavetale.easter.util.Fireworks;
 import com.cavetale.easter.util.Json;
-import com.cavetale.mytems.Mytems;
+import com.cavetale.mytems.item.easter.EasterEggColor;
 import com.cavetale.sidebar.PlayerSidebarEvent;
 import com.cavetale.sidebar.Priority;
 import com.winthier.playercache.PlayerCache;
 import java.io.File;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -21,8 +22,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.DyeColor;
@@ -48,11 +47,13 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
+import static net.kyori.adventure.text.format.TextDecoration.*;
 
 public final class EasterPlugin extends JavaPlugin implements Listener {
     protected static EasterPlugin instance;
@@ -90,12 +91,12 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         evilMobs.clear();
     }
 
-    void save() {
+    protected void save() {
         getDataFolder().mkdirs();
         Json.save(new File(getDataFolder(), "save.json"), save, true);
     }
 
-    void tickPlayers() {
+    private void tickPlayers() {
         if (save.getRegion() == null) return;
         evilMobs.removeIf(e -> !e.isValid());
         for (Player player : save.getRegion().toWorld().getPlayers()) {
@@ -113,21 +114,14 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         }
     }
 
-    ItemStack randomEasterEgg() {
-        List<Mytems> mytemsList = Arrays
-            .asList(Mytems.BLUE_EASTER_EGG,
-                    Mytems.GREEN_EASTER_EGG,
-                    Mytems.ORANGE_EASTER_EGG,
-                    Mytems.PINK_EASTER_EGG,
-                    Mytems.PURPLE_EASTER_EGG,
-                    Mytems.YELLOW_EASTER_EGG);
-        Mytems mytems = mytemsList.get(random.nextInt(mytemsList.size()));
-        return mytems.createItemStack();
+    private EasterEggColor randomEasterEggColor() {
+        EasterEggColor[] colors = EasterEggColor.values();
+        return colors[random.nextInt(colors.length)];
     }
 
-    void tickPlayer(Player player, User user) {
-        Vec3i currentEgg = user.getCurrentEgg();
+    private void tickPlayer(Player player, User user) {
         if (Timer.getEasterDay() == 0) return;
+        Vec3i currentEgg = user.getCurrentEgg();
         if (currentEgg != null) {
             EasterEgg easterEgg = easterEggMap.get(currentEgg);
             if (easterEgg != null && easterEgg.itemFrame.isValid()) {
@@ -138,11 +132,12 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
             Block block = currentEgg.toBlock(save.getRegion().toWorld());
             Location location = block.getLocation().add(0.5, 0.0, 0.5).setDirection(new Vector(0.0, 1.0, 0.0));
             ItemFrame itemFrame;
+            EasterEggColor color = randomEasterEggColor();
             try {
                 itemFrame = location.getWorld().spawn(location, ItemFrame.class, e -> {
                         e.setFacingDirection(BlockFace.UP);
                         e.setPersistent(false);
-                        e.setItem(randomEasterEgg());
+                        e.setItem(color.basketMytems.createItemStack());
                         e.setItemDropChance(0.0f);
                         e.setVisible(false);
                         Rotation[] rotations = Rotation.values();
@@ -154,13 +149,13 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                 user.setCurrentEgg(null);
                 return;
             }
-            easterEgg = new EasterEgg(player.getUniqueId(), itemFrame);
+            easterEgg = new EasterEgg(player.getUniqueId(), itemFrame, color);
             easterEggMap.put(currentEgg, easterEgg);
             return;
         }
         // Current egg is null!
         long now = System.currentTimeMillis();
-        if (user.getRegularEggsDiscovered() < Timer.getTotalEggs() || user.getEggCooldown() < now) {
+        if (user.getEggCooldown() < now) {
             // Find a new egg spot. If this fails, try again next "tick"
             final int dx = random.nextInt(save.getRegion().getCuboid().getSizeX());
             final int dz = random.nextInt(save.getRegion().getCuboid().getSizeZ());
@@ -174,8 +169,9 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                 Block block = world.getBlockAt(x, y, z);
                 if (!block.isSolid()) continue;
                 Block above = block.getRelative(0, 1, 0);
-                if (!above.isEmpty()) continue;
-                if (above.getLightFromSky() == 0 && above.getLightFromBlocks() < 3) continue;
+                if (above.isLiquid()) continue;
+                if (!above.getCollisionShape().getBoundingBoxes().isEmpty()) continue;
+                if (above.getLightFromSky() == 0 && above.getLightFromBlocks() < 7) continue;
                 Vec3i vector = Vec3i.of(above);
                 if (save.userHasCurrentEgg(vector)) continue;
                 vectors.add(vector);
@@ -188,7 +184,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         }
     }
 
-    boolean spawnEvilMob(Player player) {
+    private boolean spawnEvilMob(Player player) {
         Location location = player.getLocation();
         for (Entity evilMob : evilMobs) {
             if (evilMob.getLocation().distanceSquared(location) < 256.0) {
@@ -272,7 +268,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
     }
 
     @EventHandler
-    void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
+    private void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
         if (save.getRegion() == null) return;
         if (!(event.getRightClicked() instanceof ItemFrame)) return;
         ItemFrame itemFrame = (ItemFrame) event.getRightClicked();
@@ -284,7 +280,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
     }
 
     @EventHandler
-    void onHangingBreak(HangingBreakEvent event) {
+    private void onHangingBreak(HangingBreakEvent event) {
         if (save.getRegion() == null) return;
         if (!(event.getEntity() instanceof ItemFrame)) return;
         ItemFrame itemFrame = (ItemFrame) event.getEntity();
@@ -295,7 +291,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         event.setCancelled(true);
     }
 
-    static String th(int in) {
+    private static String th(int in) {
         String out = Integer.toString(in);
         switch (out.charAt(out.length() - 1)) {
         case '1':
@@ -310,7 +306,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
     }
 
     @EventHandler
-    void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+    private void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
         if (save.getRegion() == null) return;
         if (!Objects.equals(event.getEntity().getWorld(), save.getRegion().toWorld())) return;
         if (event.getEntity() instanceof ItemFrame) {
@@ -324,34 +320,37 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
             if (!(player.hasPermission("easter.hunt"))) return;
             if (!Objects.equals(player.getUniqueId(), easterEgg.owner)) {
                 String name = PlayerCache.nameForUuid(easterEgg.owner);
-                player.sendMessage(Component.text("This egg belongs to " + name + "!").color(NamedTextColor.RED));
+                player.sendMessage(text("This egg belongs to " + name + "!").color(RED));
                 return;
             }
             // Drop item frame
             easterEggMap.remove(vector);
             Location location = vector.toBlock(itemFrame.getWorld()).getLocation().add(0.5, 0.0, 0.5);
-            itemFrame.getWorld().dropItem(location, itemFrame.getItem().clone(), e -> {
+            itemFrame.getWorld().dropItem(location, easterEgg.color.eggMytems.createItemStack(), e -> {
                     e.setOwner(player.getUniqueId());
                 });
             itemFrame.remove();
             // Update user
             User user = save.userOf(player.getUniqueId());
             user.setCurrentEgg(null);
-            int totalEggsDiscovered = user.getTotalEggsDiscovered() + 1;
+            final int totalEggsDiscovered = user.getTotalEggsDiscovered() + 1;
             user.setTotalEggsDiscovered(totalEggsDiscovered);
             int regularEggsDiscovered = user.getRegularEggsDiscovered();
-            int totalEggs = Timer.getTotalEggs();
+            final int totalEggs = Timer.getTotalEggs();
             if (regularEggsDiscovered < totalEggs) {
                 regularEggsDiscovered += 1;
                 user.setRegularEggsDiscovered(regularEggsDiscovered);
             }
             if (regularEggsDiscovered < totalEggs) {
-                player.sendMessage(Component.text("You discovered your " + th(totalEggsDiscovered) + " egg! A new egg will spawn soon.")
-                                   .color(NamedTextColor.GREEN));
+                user.setEggCooldown(System.currentTimeMillis() + Duration.ofSeconds(10).toMillis());
+                player.sendMessage(text("You discovered your " + th(totalEggsDiscovered) + " egg! A new egg will spawn soon.")
+                                   .color(GREEN));
             } else {
-                user.setEggCooldown(System.currentTimeMillis() + 10L * 60L * 1000L);
-                player.sendMessage(Component.text("You discovered your " + th(totalEggsDiscovered) + " egg! A new egg will spawn in 10 minutes.")
-                                   .color(NamedTextColor.GREEN));
+                int excess = totalEggsDiscovered - totalEggs;
+                int minutes = 5 + excess;
+                user.setEggCooldown(System.currentTimeMillis() + Duration.ofMinutes(minutes).toMillis());
+                player.sendMessage(text("You discovered your " + th(totalEggsDiscovered) + " egg! A new egg will spawn in " + minutes + " minutes.")
+                                   .color(GREEN));
             }
             save();
             player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.MASTER, 0.2f, 2.0f);
@@ -413,7 +412,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
     }
 
     @EventHandler
-    void onPlayerSidebar(PlayerSidebarEvent event) {
+    private void onPlayerSidebar(PlayerSidebarEvent event) {
         if (save.getRegion() == null) return;
         Player player = event.getPlayer();
         if (!(player.hasPermission("easter.hunt"))) return;
@@ -422,37 +421,37 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         Vec3i currentEgg = user.getCurrentEgg();
         List<Component> lines = new ArrayList<>();
         if (currentEgg != null) {
-            lines.add(Component.text("Easter Egg Ready!", NamedTextColor.GREEN));
+            lines.add(text("Easter Egg Ready!", GREEN));
             if (save.getRegion().contains(player.getLocation())) {
                 int distance = Vec3i.of(player.getLocation()).distanceSquared(currentEgg);
                 if (distance < 12 * 12) {
-                    lines.add(Component.text("Hint ", NamedTextColor.GREEN)
-                              .append(Component.text("HOT", NamedTextColor.GOLD, TextDecoration.BOLD)));
+                    lines.add(text("Hint ", GREEN)
+                              .append(text("HOT", GOLD, BOLD)));
                 } else if (distance < 24 * 24) {
-                    lines.add(Component.text("Hint ", NamedTextColor.GREEN)
-                              .append(Component.text("Warmer", NamedTextColor.GOLD, TextDecoration.ITALIC)));
+                    lines.add(text("Hint ", GREEN)
+                              .append(text("Warmer", GOLD, ITALIC)));
                 } else if (distance < 48 * 48) {
-                    lines.add(Component.text("Hint ", NamedTextColor.GREEN)
-                              .append(Component.text("Warm", NamedTextColor.YELLOW, TextDecoration.ITALIC)));
+                    lines.add(text("Hint ", GREEN)
+                              .append(text("Warm", YELLOW, ITALIC)));
                 } else {
-                    lines.add(Component.text("Hint ", NamedTextColor.GREEN)
-                              .append(Component.text("Cold", NamedTextColor.AQUA, TextDecoration.ITALIC)));
+                    lines.add(text("Hint ", GREEN)
+                              .append(text("Cold", AQUA, ITALIC)));
                 }
             } else {
-                lines.add(Component.text("Visit the Easter World!", NamedTextColor.GREEN));
+                lines.add(text("Visit the Easter World!", GREEN));
             }
         } else if (user.getEggCooldown() == 0L) {
-            lines.add(Component.text("Easter Egg Ready!", NamedTextColor.GREEN));
-            lines.add(Component.text("Visit the Easter World!", NamedTextColor.GREEN));
+            lines.add(text("Easter Egg Ready!", GREEN));
+            lines.add(text("Visit the Easter World!", GREEN));
         } else {
             long duration = Math.max(0L, user.getEggCooldown() - System.currentTimeMillis());
             long seconds = duration / 1000L;
             long minutes = seconds / 60L;
             seconds %= 60L;
-            lines.add(Component.text().color(NamedTextColor.WHITE)
-                      .append(Component.text("Easter Egg in ", NamedTextColor.GREEN))
-                      .append(Component.text(minutes)).append(Component.text("m ", NamedTextColor.GRAY))
-                      .append(Component.text(seconds)).append(Component.text("s", NamedTextColor.GRAY))
+            lines.add(text().color(WHITE)
+                      .append(text("Easter Egg in ", GREEN))
+                      .append(text(minutes)).append(text("m ", GRAY))
+                      .append(text(seconds)).append(text("s", GRAY))
                       .build());
         }
         if (!lines.isEmpty()) {
@@ -461,7 +460,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
     }
 
     @EventHandler
-    void onPlayerBlockAbility(PlayerBlockAbilityQuery query) {
+    private void onPlayerBlockAbility(PlayerBlockAbilityQuery query) {
         if (save.getRegion() == null) return;
         if (save.getRegion().contains(query.getBlock())) {
             query.setCancelled(true);
@@ -469,7 +468,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
     }
 
     @EventHandler
-    void onPlayerEntityAbiltiy(PlayerEntityAbilityQuery query) {
+    private void onPlayerEntityAbiltiy(PlayerEntityAbilityQuery query) {
         if (save.getRegion() == null) return;
         if (save.getRegion().contains(query.getEntity().getLocation())) {
             query.setCancelled(true);

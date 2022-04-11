@@ -14,6 +14,10 @@ public final class Timer {
     @Getter private static int day;
     @Getter private static int hour;
     @Getter private static int dayOfWeek;
+    public static final int ONE = 20220411;
+    public static final int END = 20220424;
+    public static final int DAYS = END - ONE + 1;
+    public static final int EGGS_PER_DAY = 7;
 
     private Timer() { }
 
@@ -39,21 +43,16 @@ public final class Timer {
      * day after Easter Monday is the finale. Any other day yields 0.
      */
     public static int getEasterDay() {
-        switch (dayId) {
-        case 20210329: return 1;
-        case 20210330: return 2;
-        case 20210331: return 3;
-        case 20210401: return 4;
-        case 20210402: return 5;
-        case 20210403: return 6;
-        case 20210404: return 7;
-        case 20210405: return 8;
-        case 20210406: return 9;
-        default: return 0;
-        }
+        if (dayId < ONE || dayId > END) return 0;
+        return dayId - ONE + 1;
     }
 
+    /**
+     * How many regular eggs a player can find right now.
+     * Basically amount of days times eggs per day, except the final
+     * day is considered overhang and does not count.
+     */
     public static int getTotalEggs() {
-        return Math.min(8, getEasterDay()) * 10;
+        return Math.min(DAYS - 1, getEasterDay()) * EGGS_PER_DAY;
     }
 }
