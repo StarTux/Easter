@@ -453,7 +453,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                     Component msg = text("Warmer", GOLD, ITALIC);
                     lines.add(join(noSeparators(), text("Hint ", GREEN), msg));
                     player.sendActionBar(msg);
-                } else if (distance < 48 * 48) {
+                } else if (distance < 64 * 64) {
                     Component msg = text("Warm", YELLOW, ITALIC);
                     lines.add(join(noSeparators(), text("Hint ", GREEN), msg));
                     player.sendActionBar(msg);
@@ -483,9 +483,9 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                         double angle = targetAngle - playerAngle;
                         if (angle > Math.PI) angle -= 2.0 * Math.PI;
                         if (angle < -Math.PI) angle += 2.0 * Math.PI;
-                        if (angle < Math.PI * -0.25) {
+                        if (angle < Math.PI * -0.5) {
                             player.sendActionBar(Mytems.ARROW_LEFT.component);
-                        } else if (angle > Math.PI * 0.25) {
+                        } else if (angle > Math.PI * 0.5) {
                             player.sendActionBar(Mytems.ARROW_RIGHT.component);
                         } else {
                             player.sendActionBar(Mytems.ARROW_UP.component);
