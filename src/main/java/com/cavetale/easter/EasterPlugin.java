@@ -8,6 +8,7 @@ import com.cavetale.easter.struct.User;
 import com.cavetale.easter.struct.Vec3i;
 import com.cavetale.easter.util.Fireworks;
 import com.cavetale.easter.util.Json;
+import com.cavetale.mytems.Mytems;
 import com.cavetale.mytems.item.easter.EasterEggColor;
 import com.cavetale.sidebar.PlayerSidebarEvent;
 import com.cavetale.sidebar.Priority;
@@ -44,14 +45,18 @@ import org.bukkit.entity.Rabbit;
 import org.bukkit.entity.Sheep;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
+import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.*;
 
@@ -172,7 +177,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                 Block above = block.getRelative(0, 1, 0);
                 if (above.isLiquid()) continue;
                 if (!above.getCollisionShape().getBoundingBoxes().isEmpty()) continue;
-                if (above.getLightFromSky() == 0 && above.getLightFromBlocks() < 7) continue;
+                if (above.getLightFromSky() == 0) continue;
                 Vec3i vector = Vec3i.of(above);
                 if (save.userHasCurrentEgg(vector)) continue;
                 vectors.add(vector);
@@ -308,80 +313,12 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
 
     @EventHandler
     private void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
-        if (save.getRegion() == null) return;
-        if (!Objects.equals(event.getEntity().getWorld(), save.getRegion().toWorld())) return;
-        if (event.getEntity() instanceof ItemFrame) {
-            ItemFrame itemFrame = (ItemFrame) event.getEntity();
-            Vec3i vector = Vec3i.of(itemFrame.getLocation());
-            EasterEgg easterEgg = easterEggMap.get(vector);
-            if (easterEgg == null) return;
+        if (event.getDamager() instanceof Player player) {
+            if (save.getRegion() == null) return;
+            if (!Objects.equals(event.getEntity().getWorld(), save.getRegion().toWorld())) return;
+            Vec3i vector = Vec3i.of(event.getEntity().getLocation());
+            onHitBlock(player, vector);
             event.setCancelled(true);
-            if (!(event.getDamager() instanceof Player)) return;
-            Player player = (Player) event.getDamager();
-            if (!(player.hasPermission("easter.hunt"))) return;
-            if (!Objects.equals(player.getUniqueId(), easterEgg.owner)) {
-                String name = PlayerCache.nameForUuid(easterEgg.owner);
-                player.sendMessage(text("This egg belongs to " + name + "!").color(RED));
-                return;
-            }
-            // Drop item frame
-            easterEggMap.remove(vector);
-            Location location = vector.toBlock(itemFrame.getWorld()).getLocation().add(0.5, 0.0, 0.5);
-            itemFrame.getWorld().dropItem(location, easterEgg.color.eggMytems.createItemStack(), e -> {
-                    e.setOwner(player.getUniqueId());
-                });
-            itemFrame.remove();
-            // Update user
-            User user = save.userOf(player.getUniqueId());
-            user.setCurrentEgg(null);
-            final int totalEggsDiscovered = user.getTotalEggsDiscovered() + 1;
-            user.setTotalEggsDiscovered(totalEggsDiscovered);
-            int regularEggsDiscovered = user.getRegularEggsDiscovered();
-            final int totalEggs = Timer.getTotalEggs();
-            if (regularEggsDiscovered < totalEggs) {
-                regularEggsDiscovered += 1;
-                user.setRegularEggsDiscovered(regularEggsDiscovered);
-            }
-            if (regularEggsDiscovered < totalEggs) {
-                user.setEggCooldown(System.currentTimeMillis() + Duration.ofSeconds(10).toMillis());
-                player.sendMessage(text("You discovered your " + th(totalEggsDiscovered) + " egg! A new egg will spawn soon.")
-                                   .color(GREEN));
-            } else {
-                int excess = totalEggsDiscovered - totalEggs;
-                int minutes = 5 + excess;
-                user.setEggCooldown(System.currentTimeMillis() + Duration.ofMinutes(minutes).toMillis());
-                player.sendMessage(text("You discovered your " + th(totalEggsDiscovered) + " egg! A new egg will spawn in " + minutes + " minutes.")
-                                   .color(GREEN));
-            }
-            save();
-            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.MASTER, 0.2f, 2.0f);
-            Fireworks.spawnFirework(location);
-            Particle.DustOptions dust = new Particle.DustOptions(Color.fromRGB(255, 105, 180), 1.5f);
-            location.getWorld().spawnParticle(Particle.REDSTONE, location, 16, .25, .25, .25, 0, dust);
-            if (random.nextBoolean()) {
-                int count = 1 + random.nextInt(3);
-                for (int i = 0; i < count; i += 1) {
-                    location.getWorld().spawn(location, Sheep.class, e -> {
-                            e.setPersistent(false);
-                            e.setRemoveWhenFarAway(true);
-                            e.setColor(DyeColor.PINK);
-                            e.setBaby();
-                        });
-                }
-            } else {
-                int count = 1 + random.nextInt(5);
-                for (int i = 0; i < count; i += 1) {
-                    location.getWorld().spawn(location, Rabbit.class, e -> {
-                            e.setPersistent(false);
-                            e.setRemoveWhenFarAway(true);
-                            List<Rabbit.Type> types = new ArrayList<>(Arrays.asList(Rabbit.Type.values()));
-                            types.remove(Rabbit.Type.THE_KILLER_BUNNY);
-                            Rabbit.Type type = types.get(random.nextInt(types.size()));
-                            e.setRabbitType(type);
-                            e.setBaby();
-                        });
-                }
-            }
             return;
         }
         if (event.getDamager().getType() == EntityType.FIREWORK) {
@@ -412,6 +349,85 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         }
     }
 
+    @EventHandler(ignoreCancelled = false)
+    private void onPlayerInteract(PlayerInteractEvent event) {
+        if (event.getAction() != Action.LEFT_CLICK_BLOCK) return;
+        if (!event.hasBlock()) return;
+        if (save.getRegion() == null) return;
+        Block block = event.getClickedBlock();
+        if (!Objects.equals(block.getWorld(), save.getRegion().toWorld())) return;
+        onHitBlock(event.getPlayer(), Vec3i.of(block));
+    }
+
+    private void onHitBlock(Player player, Vec3i vector) {
+        EasterEgg easterEgg = easterEggMap.get(vector);
+        if (easterEgg == null) return;
+        if (!(player.hasPermission("easter.hunt"))) return;
+        if (!Objects.equals(player.getUniqueId(), easterEgg.owner)) {
+            String name = PlayerCache.nameForUuid(easterEgg.owner);
+            player.sendMessage(text("This egg belongs to " + name + "!").color(RED));
+            return;
+        }
+        // Drop item frame
+        easterEggMap.remove(vector);
+        Location location = vector.toBlock(player.getWorld()).getLocation().add(0.5, 0.0, 0.5);
+        location.getWorld().dropItem(location, easterEgg.color.eggMytems.createItemStack(), e -> {
+                e.setOwner(player.getUniqueId());
+            });
+        easterEgg.itemFrame.remove();
+        // Update user
+        User user = save.userOf(player.getUniqueId());
+        user.setCurrentEgg(null);
+        final int totalEggsDiscovered = user.getTotalEggsDiscovered() + 1;
+        user.setTotalEggsDiscovered(totalEggsDiscovered);
+        int regularEggsDiscovered = user.getRegularEggsDiscovered();
+        final int totalEggs = Timer.getTotalEggs();
+        if (regularEggsDiscovered < totalEggs) {
+            regularEggsDiscovered += 1;
+            user.setRegularEggsDiscovered(regularEggsDiscovered);
+        }
+        if (regularEggsDiscovered < totalEggs) {
+            user.setEggCooldown(System.currentTimeMillis() + Duration.ofSeconds(10).toMillis());
+            player.sendMessage(text("You discovered your " + th(totalEggsDiscovered) + " egg! A new egg will spawn soon.")
+                               .color(GREEN));
+        } else {
+            int excess = totalEggsDiscovered - totalEggs;
+            int minutes = 5 + excess;
+            user.setEggCooldown(System.currentTimeMillis() + Duration.ofMinutes(minutes).toMillis());
+            player.sendMessage(text("You discovered your " + th(totalEggsDiscovered) + " egg! A new egg will spawn in " + minutes + " minutes.")
+                               .color(GREEN));
+        }
+        save();
+        player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.MASTER, 0.2f, 2.0f);
+        Fireworks.spawnFirework(location);
+        Particle.DustOptions dust = new Particle.DustOptions(Color.fromRGB(255, 105, 180), 1.5f);
+        location.getWorld().spawnParticle(Particle.REDSTONE, location, 16, .25, .25, .25, 0, dust);
+        if (random.nextBoolean()) {
+            int count = 1 + random.nextInt(3);
+            for (int i = 0; i < count; i += 1) {
+                location.getWorld().spawn(location, Sheep.class, e -> {
+                        e.setPersistent(false);
+                        e.setRemoveWhenFarAway(true);
+                        e.setColor(DyeColor.PINK);
+                        e.setBaby();
+                    });
+            }
+        } else {
+            int count = 1 + random.nextInt(5);
+            for (int i = 0; i < count; i += 1) {
+                location.getWorld().spawn(location, Rabbit.class, e -> {
+                        e.setPersistent(false);
+                        e.setRemoveWhenFarAway(true);
+                        List<Rabbit.Type> types = new ArrayList<>(Arrays.asList(Rabbit.Type.values()));
+                        types.remove(Rabbit.Type.THE_KILLER_BUNNY);
+                        Rabbit.Type type = types.get(random.nextInt(types.size()));
+                        e.setRabbitType(type);
+                        e.setBaby();
+                    });
+            }
+        }
+    }
+
     @EventHandler
     private void onPlayerSidebar(PlayerSidebarEvent event) {
         if (save.getRegion() == null) return;
@@ -423,20 +439,58 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         List<Component> lines = new ArrayList<>();
         if (currentEgg != null) {
             lines.add(text("Easter Egg Ready!", GREEN));
-            if (save.getRegion().contains(player.getLocation())) {
-                int distance = Vec3i.of(player.getLocation()).distanceSquared(currentEgg);
-                if (distance < 12 * 12) {
-                    lines.add(text("Hint ", GREEN)
-                              .append(text("HOT", GOLD, BOLD)));
-                } else if (distance < 24 * 24) {
-                    lines.add(text("Hint ", GREEN)
-                              .append(text("Warmer", GOLD, ITALIC)));
+            Location playerLocation = player.getLocation();
+            if (save.getRegion().contains(playerLocation)) {
+                Vec3i playerVector = Vec3i.of(playerLocation);
+                int distance = playerVector.distanceSquared(currentEgg);
+                if (distance < 16 * 16) {
+                    Component msg = text("HOT", GOLD, BOLD);
+                    lines.add(join(noSeparators(), text("Hint ", GREEN), msg));
+                    player.sendActionBar(msg);
+                    Location loc = currentEgg.toBlock(player.getWorld()).getLocation().add(0.5, 0.5, 0.5);
+                    player.spawnParticle(Particle.SPELL_MOB, loc, 1, 0.25, 0.25, 0.25, 1.0);
+                } else if (distance < 32 * 32) {
+                    Component msg = text("Warmer", GOLD, ITALIC);
+                    lines.add(join(noSeparators(), text("Hint ", GREEN), msg));
+                    player.sendActionBar(msg);
                 } else if (distance < 48 * 48) {
-                    lines.add(text("Hint ", GREEN)
-                              .append(text("Warm", YELLOW, ITALIC)));
+                    Component msg = text("Warm", YELLOW, ITALIC);
+                    lines.add(join(noSeparators(), text("Hint ", GREEN), msg));
+                    player.sendActionBar(msg);
                 } else {
+                    Vec3i direct = currentEgg.subtract(playerVector);
+                    List<String> messages = new ArrayList<>();
+                    final int min = 32;
+                    if (direct.z > min) {
+                        messages.add("South");
+                    } else if (direct.z < -min) {
+                        messages.add("North");
+                    }
+                    if (direct.x > min) {
+                        messages.add("East");
+                    } else if (direct.x < -min) {
+                        messages.add("West");
+                    }
+                    if (messages.isEmpty()) {
+                        messages.add("Cold");
+                    }
                     lines.add(text("Hint ", GREEN)
-                              .append(text("Cold", AQUA, ITALIC)));
+                              .append(text(String.join(" ", messages), AQUA, ITALIC)));
+                    Vector playerDirection = playerLocation.getDirection();
+                    double playerAngle = Math.atan2(playerDirection.getZ(), playerDirection.getX());
+                    double targetAngle = Math.atan2((double) direct.z, (double) direct.x);
+                    if (Double.isFinite(playerAngle) && Double.isFinite(targetAngle)) {
+                        double angle = targetAngle - playerAngle;
+                        if (angle > Math.PI) angle -= 2.0 * Math.PI;
+                        if (angle < -Math.PI) angle += 2.0 * Math.PI;
+                        if (angle < Math.PI * -0.25) {
+                            player.sendActionBar(Mytems.ARROW_LEFT.component);
+                        } else if (angle > Math.PI * 0.25) {
+                            player.sendActionBar(Mytems.ARROW_RIGHT.component);
+                        } else {
+                            player.sendActionBar(Mytems.ARROW_UP.component);
+                        }
+                    }
                 }
             } else {
                 lines.add(text("Visit the Easter World!", GREEN));
@@ -449,8 +503,9 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
             long seconds = duration / 1000L;
             long minutes = seconds / 60L;
             seconds %= 60L;
+            lines.add(text("Easter Egg", GREEN));
             lines.add(text().color(WHITE)
-                      .append(text("Easter Egg in ", GREEN))
+                      .append(text("in ", GREEN))
                       .append(text(minutes)).append(text("m ", GRAY))
                       .append(text(seconds)).append(text("s", GRAY))
                       .build());
