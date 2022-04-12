@@ -25,6 +25,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import static com.cavetale.easter.util.EasterText.easterify;
 import static net.kyori.adventure.text.Component.join;
+import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
@@ -66,8 +67,7 @@ public final class Trades implements Listener {
             MerchantRecipe recipe = new MerchantRecipe(Mytems.EASTER_TOKEN.createItemStack(), 999);
             recipe.setExperienceReward(false);
             recipe.setIgnoreDiscounts(true);
-            recipe.setIngredients(List.of(color.eggMytems.createItemStack(),
-                                          color.eggMytems.createItemStack()));
+            recipe.setIngredients(List.of(color.eggMytems.createItemStack(3)));
             recipes.add(recipe);
         }
         merchant.setRecipes(recipes);
@@ -110,7 +110,8 @@ public final class Trades implements Listener {
         if (title != null) {
             prize = Items.text(prize, List.of(new Component[] {
                         title.getTitleComponent(),
-                        title.getTooltip(),
+                        text("" + title.getDescription(), DARK_GRAY),
+                        easterify("Unlock this title!"),
                     }));
             prize.editMeta(meta -> {
                     PersistentDataContainer pdc = meta.getPersistentDataContainer();
