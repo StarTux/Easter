@@ -102,10 +102,26 @@
       <scope>provided</scope>
     </dependency>
 
+    <!-- WorldMarker -->
+    <dependency>
+      <groupId>com.cavetale.worldmarker</groupId>
+      <artifactId>worldmarker</artifactId>
+      <version>0.1-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+
     <!-- PlayerCache -->
     <dependency>
       <groupId>com.winthier.playercache</groupId>
       <artifactId>playercache</artifactId>
+      <version>0.1-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- Title -->
+    <dependency>
+      <groupId>com.winthier.title</groupId>
+      <artifactId>title</artifactId>
       <version>0.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>

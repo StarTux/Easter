@@ -2,12 +2,12 @@ package com.cavetale.easter;
 
 import com.cavetale.core.event.block.PlayerBlockAbilityQuery;
 import com.cavetale.core.event.entity.PlayerEntityAbilityQuery;
+import com.cavetale.core.util.Json;
 import com.cavetale.easter.struct.Region;
 import com.cavetale.easter.struct.Save;
 import com.cavetale.easter.struct.User;
 import com.cavetale.easter.struct.Vec3i;
 import com.cavetale.easter.util.Fireworks;
-import com.cavetale.easter.util.Json;
 import com.cavetale.mytems.Mytems;
 import com.cavetale.mytems.item.easter.EasterEggColor;
 import com.cavetale.sidebar.PlayerSidebarEvent;
@@ -54,6 +54,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
+import static com.cavetale.easter.util.EasterText.easterify;
 import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
@@ -66,6 +67,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
     protected Map<Vec3i, EasterEgg> easterEggMap = new HashMap<>();
     protected List<Entity> evilMobs = new ArrayList<>();
     protected Random random = new Random();
+    protected Trades trades = new Trades(this);
 
     @Override
     public void onEnable() {
@@ -79,6 +81,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(this, this);
         new EasterAdminCommand(this).enable();
         new EasterCommand(this).enable();
+        trades.enable();
     }
 
     @Override
@@ -438,7 +441,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         Vec3i currentEgg = user.getCurrentEgg();
         List<Component> lines = new ArrayList<>();
         if (currentEgg != null) {
-            lines.add(text("Easter Egg Ready!", GREEN));
+            lines.add(easterify("Easter Egg Ready!"));
             Location playerLocation = player.getLocation();
             if (save.getRegion().contains(playerLocation)) {
                 Vec3i playerVector = Vec3i.of(playerLocation);
@@ -496,14 +499,14 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                 lines.add(text("Visit the Easter World!", GREEN));
             }
         } else if (user.getEggCooldown() == 0L) {
-            lines.add(text("Easter Egg Ready!", GREEN));
+            lines.add(easterify("Easter Egg Ready!"));
             lines.add(text("Visit the Easter World!", GREEN));
         } else {
             long duration = Math.max(0L, user.getEggCooldown() - System.currentTimeMillis());
             long seconds = duration / 1000L;
             long minutes = seconds / 60L;
             seconds %= 60L;
-            lines.add(text("Easter Egg", GREEN));
+            lines.add(easterify("Easter Egg"));
             lines.add(text().color(WHITE)
                       .append(text("in ", GREEN))
                       .append(text(minutes)).append(text("m ", GRAY))

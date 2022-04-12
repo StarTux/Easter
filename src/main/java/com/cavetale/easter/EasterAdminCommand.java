@@ -1,5 +1,6 @@
 package com.cavetale.easter;
 
+import com.cavetale.core.command.CommandArgCompleter;
 import com.cavetale.core.command.CommandNode;
 import com.cavetale.core.command.CommandWarn;
 import com.cavetale.easter.struct.Cuboid;
@@ -12,6 +13,7 @@ import java.time.Duration;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.event.ClickEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -34,6 +36,14 @@ final class EasterAdminCommand implements TabExecutor {
         rootNode.addChild("info").arguments("[player]")
             .description("Player info")
             .senderCaller(this::info);
+        rootNode.addChild("eggmerchant").arguments("<player>")
+            .description("Open egg merchant")
+            .completers(CommandArgCompleter.NULL)
+            .senderCaller(this::eggMerchant);
+        rootNode.addChild("tokenmerchant").arguments("<player>")
+            .description("Open token merchant")
+            .completers(CommandArgCompleter.NULL)
+            .senderCaller(this::tokenMerchant);
         plugin.getCommand("easteradmin").setExecutor(this);
         return this;
     }
@@ -105,5 +115,24 @@ final class EasterAdminCommand implements TabExecutor {
                                .clickEvent(ClickEvent.suggestCommand(cmd)));
         }
         return true;
+    }
+
+    private boolean eggMerchant(CommandSender sender, String[] args) {
+        if (args.length != 1) return false;
+        merchant(sender, args[0], false);
+        return true;
+    }
+
+    private boolean tokenMerchant(CommandSender sender, String[] args) {
+        if (args.length != 1) return false;
+        merchant(sender, args[0], true);
+        return true;
+    }
+
+    private void merchant(CommandSender sender, String name, boolean token) {
+        Player player = Bukkit.getPlayerExact(name);
+        if (player == null) throw new CommandWarn("Player not found: " + name);
+        player.openMerchant(token ? Trades.makeTokenMerchant(player) : Trades.makeEggMerchant(), true);
+        sender.sendMessage(text("Opened " + (token ? "Token" : "Egg") + " merchant for " + player.getName(), YELLOW));
     }
 }
