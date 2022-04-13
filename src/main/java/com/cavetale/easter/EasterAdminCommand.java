@@ -132,7 +132,7 @@ final class EasterAdminCommand implements TabExecutor {
     private void merchant(CommandSender sender, String name, boolean token) {
         Player player = Bukkit.getPlayerExact(name);
         if (player == null) throw new CommandWarn("Player not found: " + name);
-        player.openMerchant(token ? Trades.makeTokenMerchant(player) : Trades.makeEggMerchant(), true);
+        player.openMerchant(token ? plugin.trades.makeTokenMerchant(player) : plugin.trades.makeEggMerchant(), true);
         sender.sendMessage(text("Opened " + (token ? "Token" : "Egg") + " merchant for " + player.getName(), YELLOW));
     }
 }

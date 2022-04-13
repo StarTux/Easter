@@ -1,7 +1,7 @@
 package com.cavetale.easter.struct;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.Data;
@@ -9,19 +9,14 @@ import lombok.Data;
 @Data
 public final class Save {
     private Region region = null;
-    private List<User> users = new ArrayList<>();
+    private Map<UUID, User> users = new HashMap<>();
 
     public User userOf(UUID uuid) {
-        for (User user : users) {
-            if (Objects.equals(uuid, user.uuid)) return user;
-        }
-        User user = new User(uuid);
-        users.add(user);
-        return user;
+        return users.computeIfAbsent(uuid, User::new);
     }
 
     public boolean userHasCurrentEgg(Vec3i vector) {
-        for (User user : users) {
+        for (User user : users.values()) {
             if (Objects.equals(vector, user.currentEgg)) return true;
         }
         return false;

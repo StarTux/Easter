@@ -1,5 +1,6 @@
 package com.cavetale.easter;
 
+import com.cavetale.easter.struct.User;
 import com.cavetale.mytems.Mytems;
 import com.cavetale.mytems.item.easter.EasterEggColor;
 import com.cavetale.mytems.util.Items;
@@ -41,19 +42,34 @@ public final class Trades implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     private void onPlayerPurchase(PlayerPurchaseEvent event) {
+        Player player = event.getPlayer();
         ItemStack result = event.getTrade().getResult();
-        if (!result.hasItemMeta()) return;
+        if (triggerTitle(player, result)) return;
+        triggerMytemsPurchase(player, result);
+    }
+
+    private boolean triggerTitle(Player player, ItemStack result) {
+        if (!result.hasItemMeta()) return false;
         ItemMeta meta = result.getItemMeta();
-        if (meta == null) return;
+        if (meta == null) return false;
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
         String name = Tags.getString(pdc, titleKey);
-        if (name == null) return;
+        if (name == null) return false;
         Title title = TitlePlugin.getInstance().getTitle(name);
-        if (title == null) return;
-        Player player = event.getPlayer();
+        if (title == null) return false;
         String cmd = "titles unlockset " + player.getName() + " " + title.getName();
         plugin.getLogger().info("Running command " + cmd);
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+        return true;
+    }
+
+    private void triggerMytemsPurchase(Player player, ItemStack result) {
+        Mytems mytems = Mytems.forItem(result);
+        if (mytems == null) return;
+        User user = plugin.save.userOf(player.getUniqueId());
+        if (user.getPurchasedItems().add(mytems)) {
+            plugin.save();
+        }
     }
 
     public static Merchant makeEggMerchant() {
@@ -74,7 +90,7 @@ public final class Trades implements Listener {
         return merchant;
     }
 
-    public static Merchant makeTokenMerchant(Player player) {
+    public Merchant makeTokenMerchant(Player player) {
         Component title = join(noSeparators(),
                                Mytems.EASTER_TOKEN.component,
                                easterify("Easter Token Merchant"));
@@ -82,17 +98,21 @@ public final class Trades implements Listener {
         List<MerchantRecipe> recipes = new ArrayList<>();
         recipes.add(makeTitleRecipe(player, 20, "EasterBunny"));
         recipes.add(makeTitleRecipe(player, 20, "EggHunter"));
-        recipes.add(makeTokenRecipe(10, Mytems.EASTER_HELMET.createItemStack()));
-        recipes.add(makeTokenRecipe(10, Mytems.EASTER_CHESTPLATE.createItemStack()));
-        recipes.add(makeTokenRecipe(10, Mytems.EASTER_LEGGINGS.createItemStack()));
-        recipes.add(makeTokenRecipe(10, Mytems.EASTER_BOOTS.createItemStack()));
-        recipes.add(makeTokenRecipe(2, Mytems.KITTY_COIN.createItemStack()));
+        recipes.add(makeTokenRecipe(player, 10, Mytems.EASTER_HELMET, true));
+        recipes.add(makeTokenRecipe(player, 10, Mytems.EASTER_CHESTPLATE, true));
+        recipes.add(makeTokenRecipe(player, 10, Mytems.EASTER_LEGGINGS, true));
+        recipes.add(makeTokenRecipe(player, 10, Mytems.EASTER_BOOTS, true));
+        recipes.add(makeTokenRecipe(player, 2, Mytems.KITTY_COIN, false));
         merchant.setRecipes(recipes);
         return merchant;
     }
 
-    private static MerchantRecipe makeTokenRecipe(int tokens, ItemStack prize) {
-        int maxUses = tokens <= 3 ? 999 : 1;
+    private MerchantRecipe makeTokenRecipe(Player player, int tokens, Mytems mytems, boolean unique) {
+        UUID uuid = player.getUniqueId();
+        int maxUses = unique
+            ? (plugin.save.userOf(uuid).getPurchasedItems().contains(mytems) ? 0 : 1)
+            : 999;
+        ItemStack prize = mytems.createItemStack();
         MerchantRecipe recipe = new MerchantRecipe(prize, maxUses);
         recipe.setExperienceReward(false);
         recipe.setIgnoreDiscounts(true);
@@ -100,7 +120,7 @@ public final class Trades implements Listener {
         return recipe;
     }
 
-    private static MerchantRecipe makeTitleRecipe(Player player, int tokens, String name) {
+    private MerchantRecipe makeTitleRecipe(Player player, int tokens, String name) {
         Title title = TitlePlugin.getInstance().getTitle(name);
         UUID uuid = player.getUniqueId();
         int maxUses = title != null && !TitlePlugin.getInstance().playerHasTitle(uuid, title)
