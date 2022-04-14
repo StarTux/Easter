@@ -391,11 +391,13 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         }
         if (regularEggsDiscovered < totalEggs) {
             user.setEggCooldown(System.currentTimeMillis() + Duration.ofSeconds(10).toMillis());
+            user.setDailyExtraEggs(0);
             player.sendMessage(text("You discovered your " + th(totalEggsDiscovered) + " egg! A new egg will spawn soon.")
                                .color(GREEN));
         } else {
-            int excess = totalEggsDiscovered - totalEggs;
-            int minutes = 5 + excess;
+            int extra = user.getDailyExtraEggs();
+            int minutes = 5 + extra;
+            user.setDailyExtraEggs(extra + 1);
             user.setEggCooldown(System.currentTimeMillis() + Duration.ofMinutes(minutes).toMillis());
             player.sendMessage(text("You discovered your " + th(totalEggsDiscovered) + " egg! A new egg will spawn in " + minutes + " minutes.")
                                .color(GREEN));
