@@ -13,6 +13,7 @@ public final class User {
     protected Vec3i currentEgg;
     protected int regularEggsDiscovered;
     protected int totalEggsDiscovered;
+    protected int dailyExtraEggs;
     protected long eggCooldown; // millis
     protected long spawnCooldown; // evil mobs
     protected Set<Mytems> purchasedItems = new HashSet<>();
