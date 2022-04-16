@@ -522,7 +522,11 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
     private void onPlayerBlockAbility(PlayerBlockAbilityQuery query) {
         if (save.getRegion() == null) return;
         if (save.getRegion().contains(query.getBlock())) {
-            query.setCancelled(true);
+            switch (query.getAction()) {
+            case FLY: return;
+            default:
+                query.setCancelled(true);
+            }
         }
     }
 
