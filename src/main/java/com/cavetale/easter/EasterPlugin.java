@@ -35,6 +35,7 @@ import org.bukkit.SoundCategory;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.Waterlogged;
 import org.bukkit.entity.Bee;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -179,6 +180,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                 if (!block.isSolid()) continue;
                 Block above = block.getRelative(0, 1, 0);
                 if (above.isLiquid()) continue;
+                if (above.getBlockData() instanceof Waterlogged w && w.isWaterlogged()) continue;
                 if (!above.getCollisionShape().getBoundingBoxes().isEmpty()) continue;
                 if (above.getLightFromSky() == 0) continue;
                 Vec3i vector = Vec3i.of(above);
