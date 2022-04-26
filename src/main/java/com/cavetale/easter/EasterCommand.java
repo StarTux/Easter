@@ -29,7 +29,7 @@ public final class EasterCommand extends AbstractCommand<EasterPlugin> {
     protected void onEnable() {
         rootNode.addChild("hi")
             .description("Easter highscore")
-            .playerCaller(this::hi);
+            .senderCaller(this::hi);
     }
 
     private void tp(Player player) {
