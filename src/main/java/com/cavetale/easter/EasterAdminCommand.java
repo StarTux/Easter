@@ -1,34 +1,38 @@
 package com.cavetale.easter;
 
+import com.cavetale.core.command.AbstractCommand;
 import com.cavetale.core.command.CommandArgCompleter;
-import com.cavetale.core.command.CommandNode;
 import com.cavetale.core.command.CommandWarn;
 import com.cavetale.easter.struct.Cuboid;
 import com.cavetale.easter.struct.Region;
 import com.cavetale.easter.struct.User;
 import com.cavetale.easter.struct.Vec3i;
 import com.cavetale.easter.util.WorldEdit;
+import com.cavetale.fam.trophy.SQLTrophy;
+import com.cavetale.fam.trophy.Trophies;
+import com.cavetale.mytems.Mytems;
 import com.winthier.playercache.PlayerCache;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
+import java.util.UUID;
 import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import static com.cavetale.easter.util.EasterText.easterify;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
-@RequiredArgsConstructor
-final class EasterAdminCommand implements TabExecutor {
-    private final EasterPlugin plugin;
-    private CommandNode rootNode;
+final class EasterAdminCommand extends AbstractCommand<EasterPlugin> {
+    protected EasterAdminCommand(final EasterPlugin plugin) {
+        super(plugin, "easteradmin");
+    }
 
-    public EasterAdminCommand enable() {
-        rootNode = new CommandNode("easteradmin");
+    @Override
+    protected void onEnable() {
         rootNode.addChild("setarea").denyTabCompletion()
             .playerCaller(this::setArea);
         rootNode.addChild("debug").denyTabCompletion()
@@ -44,18 +48,9 @@ final class EasterAdminCommand implements TabExecutor {
             .description("Open token merchant")
             .completers(CommandArgCompleter.NULL)
             .senderCaller(this::tokenMerchant);
-        plugin.getCommand("easteradmin").setExecutor(this);
-        return this;
-    }
-
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String alias, String[] args) {
-        return rootNode.call(sender, command, alias, args);
-    }
-
-    @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        return rootNode.complete(sender, command, alias, args);
+        rootNode.addChild("maketrophies").denyTabCompletion()
+            .description("Make Event Trophies")
+            .senderCaller(this::makeTrophies);
     }
 
     private boolean setArea(Player player, String[] args) {
@@ -134,5 +129,37 @@ final class EasterAdminCommand implements TabExecutor {
         if (player == null) throw new CommandWarn("Player not found: " + name);
         player.openMerchant(token ? plugin.trades.makeTokenMerchant(player) : plugin.trades.makeEggMerchant(), true);
         sender.sendMessage(text("Opened " + (token ? "Token" : "Egg") + " merchant for " + player.getName(), YELLOW));
+    }
+
+    private void makeTrophies(CommandSender sender) {
+        List<UUID> uuids = new ArrayList<>(plugin.save.getUsers().keySet());
+        Collections.sort(uuids, (a, b) -> Integer.compare(plugin.save.userOf(b).getTotalEggsDiscovered(),
+                                                          plugin.save.userOf(a).getTotalEggsDiscovered()));
+        List<SQLTrophy> trophies = new ArrayList<>();
+        int previousEggs = -1;
+        int placement = 0;
+        for (UUID uuid : uuids) {
+            int eggs = plugin.save.userOf(uuid).getTotalEggsDiscovered();
+            if (eggs == 0) break;
+            if (eggs != previousEggs) {
+                placement += 1;
+                previousEggs = eggs;
+            }
+            final Mytems mytems;
+            switch (placement) {
+            case 1: mytems = Mytems.GOLD_MEDAL; break;
+            case 2: mytems = Mytems.SILVER_MEDAL; break;
+            case 3: mytems = Mytems.BRONZE_MEDAL; break;
+            default: mytems = Mytems.EASTER_TOKEN;
+            }
+            trophies.add(new SQLTrophy(uuid,
+                                      "easter/egg_hunt_2022",
+                                      placement,
+                                      mytems,
+                                      easterify("Easter Egg Hunt 2022"),
+                                       "You collected " + eggs + " Easter Egg" + (eggs != 1 ? "s" : "") + "!"));
+        }
+        Trophies.insertTrophies(trophies);
+        sender.sendMessage("Created " + trophies.size() + " trophies!");
     }
 }
