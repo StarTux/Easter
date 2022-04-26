@@ -318,9 +318,9 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
 
     @EventHandler
     private void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+        if (!Objects.equals(event.getEntity().getWorld(), save.getRegion().toWorld())) return;
         if (event.getDamager() instanceof Player player) {
             if (save.getRegion() == null) return;
-            if (!Objects.equals(event.getEntity().getWorld(), save.getRegion().toWorld())) return;
             Vec3i vector = Vec3i.of(event.getEntity().getLocation());
             onHitBlock(player, vector);
             event.setCancelled(true);
