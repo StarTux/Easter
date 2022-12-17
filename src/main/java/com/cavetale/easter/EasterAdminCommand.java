@@ -3,11 +3,10 @@ package com.cavetale.easter;
 import com.cavetale.core.command.AbstractCommand;
 import com.cavetale.core.command.CommandArgCompleter;
 import com.cavetale.core.command.CommandWarn;
-import com.cavetale.easter.struct.Cuboid;
+import com.cavetale.core.struct.Cuboid;
+import com.cavetale.core.struct.Vec3i;
 import com.cavetale.easter.struct.Region;
 import com.cavetale.easter.struct.User;
-import com.cavetale.easter.struct.Vec3i;
-import com.cavetale.easter.util.WorldEdit;
 import com.cavetale.fam.trophy.SQLTrophy;
 import com.cavetale.fam.trophy.Trophies;
 import com.cavetale.mytems.Mytems;
@@ -54,8 +53,7 @@ final class EasterAdminCommand extends AbstractCommand<EasterPlugin> {
     }
 
     private boolean setArea(Player player, String[] args) {
-        Cuboid cuboid = WorldEdit.getSelection(player);
-        if (cuboid == null) throw new CommandWarn("Make a selection first!");
+        Cuboid cuboid = Cuboid.requireSelectionOf(player);
         Region region = new Region(player.getWorld().getName(), cuboid);
         plugin.save.setRegion(region);
         plugin.save();

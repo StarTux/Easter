@@ -1,5 +1,6 @@
 package com.cavetale.easter.struct;
 
+import com.cavetale.core.struct.Vec3i;
 import com.cavetale.mytems.Mytems;
 import java.util.HashSet;
 import java.util.Set;

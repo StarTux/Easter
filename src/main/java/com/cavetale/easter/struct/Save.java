@@ -1,5 +1,6 @@
 package com.cavetale.easter.struct;
 
+import com.cavetale.core.struct.Vec3i;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;

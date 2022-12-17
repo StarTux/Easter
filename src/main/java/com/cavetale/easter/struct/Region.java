@@ -1,5 +1,6 @@
 package com.cavetale.easter.struct;
 
+import com.cavetale.core.struct.Cuboid;
 import lombok.Value;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
