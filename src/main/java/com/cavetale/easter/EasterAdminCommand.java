@@ -3,6 +3,7 @@ package com.cavetale.easter;
 import com.cavetale.core.command.AbstractCommand;
 import com.cavetale.core.command.CommandArgCompleter;
 import com.cavetale.core.command.CommandWarn;
+import com.cavetale.core.playercache.PlayerCache;
 import com.cavetale.core.struct.Cuboid;
 import com.cavetale.core.struct.Vec3i;
 import com.cavetale.easter.struct.Region;
@@ -10,7 +11,6 @@ import com.cavetale.easter.struct.User;
 import com.cavetale.fam.trophy.SQLTrophy;
 import com.cavetale.fam.trophy.Trophies;
 import com.cavetale.mytems.Mytems;
-import com.winthier.playercache.PlayerCache;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,6 +50,14 @@ final class EasterAdminCommand extends AbstractCommand<EasterPlugin> {
         rootNode.addChild("maketrophies").denyTabCompletion()
             .description("Make Event Trophies")
             .senderCaller(this::makeTrophies);
+        rootNode.addChild("clearegg").arguments("<player>")
+            .description("Clear current player egg")
+            .completers(CommandArgCompleter.NULL)
+            .senderCaller(this::clearEgg);
+        rootNode.addChild("skipcooldown").arguments("<player>")
+            .description("Skip player egg cooldown")
+            .completers(CommandArgCompleter.NULL)
+            .senderCaller(this::skipCooldown);
     }
 
     private boolean setArea(Player player, String[] args) {
@@ -160,5 +168,30 @@ final class EasterAdminCommand extends AbstractCommand<EasterPlugin> {
         }
         Trophies.insertTrophies(trophies);
         sender.sendMessage("Created " + trophies.size() + " trophies!");
+    }
+
+    private boolean clearEgg(CommandSender sender, String[] args) {
+        if (args.length != 1) return false;
+        PlayerCache player = PlayerCache.require(args[0]);
+        User user = plugin.save.userOf(player.uuid);
+        Vec3i currentEgg = user.getCurrentEgg();
+        if (currentEgg == null) {
+            throw new CommandWarn("Player has no current egg: " + player.name);
+        }
+        user.setCurrentEgg(null);
+        EasterEgg easterEgg = plugin.easterEggMap.get(currentEgg);
+        if (easterEgg != null) easterEgg.itemFrame.remove();
+        plugin.save();
+        sender.sendMessage(text("Egg removed: " + player.name + ", " + currentEgg, YELLOW));
+        return true;
+    }
+
+    private boolean skipCooldown(CommandSender sender, String[] args) {
+        if (args.length != 1) return false;
+        PlayerCache player = PlayerCache.require(args[0]);
+        User user = plugin.save.userOf(player.uuid);
+        user.setEggCooldown(0L);
+        sender.sendMessage("Egg cooldown cleared: " + player.name);
+        return true;
     }
 }

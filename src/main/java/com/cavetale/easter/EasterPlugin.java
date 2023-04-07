@@ -4,6 +4,7 @@ import com.cavetale.core.event.block.PlayerBlockAbilityQuery;
 import com.cavetale.core.event.entity.PlayerEntityAbilityQuery;
 import com.cavetale.core.event.hud.PlayerHudEvent;
 import com.cavetale.core.event.hud.PlayerHudPriority;
+import com.cavetale.core.playercache.PlayerCache;
 import com.cavetale.core.struct.Vec3i;
 import com.cavetale.core.util.Json;
 import com.cavetale.easter.struct.Region;
@@ -12,11 +13,12 @@ import com.cavetale.easter.struct.User;
 import com.cavetale.easter.util.Fireworks;
 import com.cavetale.mytems.Mytems;
 import com.cavetale.mytems.item.easter.EasterEggColor;
-import com.winthier.playercache.PlayerCache;
+import com.cavetale.mytems.util.Entities;
 import java.io.File;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +56,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 import static com.cavetale.easter.util.EasterText.easterify;
 import static net.kyori.adventure.text.Component.join;
@@ -147,6 +150,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                 itemFrame = location.getWorld().spawn(location, ItemFrame.class, e -> {
                         e.setFacingDirection(BlockFace.UP);
                         e.setPersistent(false);
+                        Entities.setTransient(e);
                         e.setItem(color.basketMytems.createItemStack());
                         e.setItemDropChance(0.0f);
                         e.setVisible(false);
@@ -175,9 +179,15 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
             int lowest = save.getRegion().getCuboid().getMin().getY();
             int highest = Math.min(world.getHighestBlockYAt(x, z), save.getRegion().getCuboid().getMax().getY());
             List<Vec3i> vectors = new ArrayList<>();
+            // Find solid blocks to put egg above.
             for (int y = lowest; y <= highest; y += 1) {
                 Block block = world.getBlockAt(x, y, z);
-                if (!block.isSolid()) continue;
+                Collection<BoundingBox> blockBB = block.getCollisionShape().getBoundingBoxes();
+                if (blockBB.size() != 1) continue;
+                BoundingBox bb = blockBB.iterator().next();
+                if (bb.getWidthX() != 1.0 || bb.getHeight() != 1.0 || bb.getWidthZ() != 1.0) {
+                    continue;
+                }
                 Block above = block.getRelative(0, 1, 0);
                 if (above.isLiquid()) continue;
                 if (above.getBlockData() instanceof Waterlogged w && w.isWaterlogged()) continue;
