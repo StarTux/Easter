@@ -117,10 +117,10 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
             if (!save.getRegion().contains(player.getLocation())) continue;
             User user = save.userOf(player.getUniqueId());
             tickPlayer(player, user);
-            long now = System.currentTimeMillis();
-            if (now > user.getSpawnCooldown() && spawnEvilMob(player)) {
-                user.setSpawnCooldown(now + 1000L * 30L);
-            }
+            // long now = System.currentTimeMillis();
+            // if (now > user.getSpawnCooldown() && spawnEvilMob(player)) {
+            //     user.setSpawnCooldown(now + 1000L * 30L);
+            // }
         }
     }
 
