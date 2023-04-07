@@ -100,11 +100,12 @@ final class EasterAdminCommand extends AbstractCommand<EasterPlugin> {
         if (currentEgg == null) {
             sender.sendMessage(text("No current egg", RED));
         } else {
-            String cmd = "/tp"
-                + " " + currentEgg.getX()
+            String coord = currentEgg.getX()
                 + " " + currentEgg.getY()
                 + " " + currentEgg.getZ();
-            sender.sendMessage(text("Current egg: " + currentEgg, YELLOW)
+            String cmd = "/tp" + " " + coord;
+            sender.sendMessage(text("Current egg: " + coord, YELLOW)
+                               .insertion(coord)
                                .clickEvent(ClickEvent.suggestCommand(cmd)));
         }
         return true;
