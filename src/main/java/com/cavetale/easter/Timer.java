@@ -15,7 +15,7 @@ public final class Timer {
     @Getter private static int hour;
     @Getter private static int dayOfWeek;
     public static final int ONE = 20230407;
-    public static final int END = 20230421;
+    public static final int END = 20230424;
     public static final int DAYS = END - ONE + 1;
     public static final int EGGS_PER_DAY = 7;
 
