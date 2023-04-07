@@ -2,6 +2,8 @@ package com.cavetale.easter;
 
 import com.cavetale.core.event.block.PlayerBlockAbilityQuery;
 import com.cavetale.core.event.entity.PlayerEntityAbilityQuery;
+import com.cavetale.core.event.hud.PlayerHudEvent;
+import com.cavetale.core.event.hud.PlayerHudPriority;
 import com.cavetale.core.struct.Vec3i;
 import com.cavetale.core.util.Json;
 import com.cavetale.easter.struct.Region;
@@ -10,8 +12,6 @@ import com.cavetale.easter.struct.User;
 import com.cavetale.easter.util.Fireworks;
 import com.cavetale.mytems.Mytems;
 import com.cavetale.mytems.item.easter.EasterEggColor;
-import com.cavetale.sidebar.PlayerSidebarEvent;
-import com.cavetale.sidebar.Priority;
 import com.winthier.playercache.PlayerCache;
 import java.io.File;
 import java.time.Duration;
@@ -436,7 +436,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
     }
 
     @EventHandler
-    private void onPlayerSidebar(PlayerSidebarEvent event) {
+    private void onPlayerHud(PlayerHudEvent event) {
         if (save.getRegion() == null) return;
         Player player = event.getPlayer();
         if (!(player.hasPermission("easter.hunt"))) return;
@@ -518,7 +518,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                       .build());
         }
         if (!lines.isEmpty()) {
-            event.add(this, Priority.HIGH, lines);
+            event.sidebar(PlayerHudPriority.HIGH, lines);
         }
     }
 
