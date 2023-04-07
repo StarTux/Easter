@@ -23,7 +23,7 @@ public final class Timer {
 
     static void update() {
         Instant instant = Instant.now();
-        LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.of("UTC-11"));
         LocalDate localDate = localDateTime.toLocalDate();
         year = localDate.getYear();
         month = localDate.getMonth().getValue();
