@@ -13,11 +13,11 @@ import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+import static com.cavetale.core.font.Unicode.subscript;
 import static com.cavetale.easter.util.EasterText.easterify;
-import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.JoinConfiguration.separator;
+import static net.kyori.adventure.text.Component.textOfChildren;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public final class EasterCommand extends AbstractCommand<EasterPlugin> {
@@ -44,17 +44,23 @@ public final class EasterCommand extends AbstractCommand<EasterPlugin> {
         Collections.sort(uuids, (a, b) -> Integer.compare(plugin.save.userOf(b).getTotalEggsDiscovered(),
                                                           plugin.save.userOf(a).getTotalEggsDiscovered()));
         sender.sendMessage(easterify("Easter Highscore - Eggs Discovered"));
+        int rank = 0;
+        int lastScore = -1;
         for (int i = 0; i < 10; i += 1) {
             if (i >= uuids.size()) break;
             UUID uuid = uuids.get(i);
             int score = plugin.save.userOf(uuid).getTotalEggsDiscovered();
+            if (score != lastScore) {
+                rank += 1;
+                lastScore = score;
+            }
             Player player = Bukkit.getPlayer(uuid);
-            sender.sendMessage(join(separator(space()),
-                                    Glyph.toComponent("" + (i + 1)),
-                                    easterify("" + score),
-                                    (player != null
-                                     ? player.displayName()
-                                     : text("" + PlayerCache.nameForUuid(uuid), WHITE))));
+            sender.sendMessage(textOfChildren(Glyph.toComponent("" + rank),
+                                              text(subscript("" + score), GRAY),
+                                              space(),
+                                              (player != null
+                                               ? player.displayName()
+                                               : text("" + PlayerCache.nameForUuid(uuid), WHITE))));
         }
     }
 }
