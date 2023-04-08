@@ -192,7 +192,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                 if (above.isLiquid()) continue;
                 if (above.getBlockData() instanceof Waterlogged w && w.isWaterlogged()) continue;
                 if (!above.getCollisionShape().getBoundingBoxes().isEmpty()) continue;
-                if (above.getLightFromSky() == 0) continue;
+                if (above.getLightFromSky() < 8) continue;
                 Vec3i vector = Vec3i.of(above);
                 if (save.userHasCurrentEgg(vector)) continue;
                 vectors.add(vector);
