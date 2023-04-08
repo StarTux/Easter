@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.UUID;
 import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import static com.cavetale.easter.util.EasterText.easterify;
@@ -66,7 +65,7 @@ final class EasterAdminCommand extends AbstractCommand<EasterPlugin> {
         plugin.save.setRegion(region);
         plugin.save();
         plugin.reloadChunks();
-        player.sendMessage(ChatColor.YELLOW + "Region set: " + region);
+        player.sendMessage(text("Region set: " + region, YELLOW));
         return true;
     }
 
