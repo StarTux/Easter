@@ -132,6 +132,18 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         return colors[random.nextInt(colors.length)];
     }
 
+    private static boolean isLiquid(Block block) {
+        switch (block.getType()) {
+        case KELP:
+        case SEAGRASS:
+            return true;
+        default:
+            return block.isLiquid()
+                || (block.getBlockData() instanceof Waterlogged waterlogged
+                    && waterlogged.isWaterlogged());
+        }
+    }
+
     private void tickPlayer(Player player, User user) {
         if (Timer.getEasterDay() == 0) return;
         Vec3i currentEgg = user.getCurrentEgg();
@@ -189,8 +201,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                     continue;
                 }
                 Block above = block.getRelative(0, 1, 0);
-                if (above.isLiquid()) continue;
-                if (above.getBlockData() instanceof Waterlogged w && w.isWaterlogged()) continue;
+                if (isLiquid(above)) continue;
                 if (!above.getCollisionShape().getBoundingBoxes().isEmpty()) continue;
                 if (above.getLightFromSky() < 8) continue;
                 Vec3i vector = Vec3i.of(above);
