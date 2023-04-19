@@ -204,6 +204,18 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                 if (isLiquid(above)) continue;
                 if (!above.getCollisionShape().getBoundingBoxes().isEmpty()) continue;
                 if (above.getLightFromSky() < 8) continue;
+                // One free block above
+                if (!above.getRelative(0, 1, 0).getCollisionShape().getBoundingBoxes().isEmpty()) continue;
+                // Some free neighbors
+                int freeNbors = 0;
+                for (BlockFace face : List.of(BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST)) {
+                    Block nbor = above.getRelative(face);
+                    if (nbor.getCollisionShape().getBoundingBoxes().isEmpty()
+                        && nbor.getRelative(0, 1, 0).getCollisionShape().getBoundingBoxes().isEmpty()) {
+                        freeNbors += 1;
+                    }
+                }
+                if (freeNbors < 2) continue;
                 Vec3i vector = Vec3i.of(above);
                 if (save.userHasCurrentEgg(vector)) continue;
                 vectors.add(vector);
