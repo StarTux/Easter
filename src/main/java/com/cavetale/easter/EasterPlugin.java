@@ -59,9 +59,8 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 import static com.cavetale.easter.util.EasterText.easterify;
-import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
+import static net.kyori.adventure.text.Component.textOfChildren;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.*;
 
@@ -466,24 +465,24 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         Vec3i currentEgg = user.getCurrentEgg();
         List<Component> lines = new ArrayList<>();
         if (currentEgg != null) {
-            lines.add(easterify("Easter Egg Ready!"));
+            lines.add(textOfChildren(Mytems.EASTER_EGG, easterify(" Easter Egg Ready!")));
             Location playerLocation = player.getLocation();
             if (save.getRegion().contains(playerLocation)) {
                 Vec3i playerVector = Vec3i.of(playerLocation);
                 int distance = playerVector.distanceSquared(currentEgg);
                 if (distance < 16 * 16) {
                     Component msg = text("HOT", GOLD, BOLD);
-                    lines.add(join(noSeparators(), text("Hint ", GREEN), msg));
+                    lines.add(textOfChildren(Mytems.EASTER_EGG, text(" Hint ", GREEN), msg));
                     player.sendActionBar(msg);
                     Location loc = currentEgg.toBlock(player.getWorld()).getLocation().add(0.5, 0.5, 0.5);
                     player.spawnParticle(Particle.SPELL_MOB, loc, 1, 0.25, 0.25, 0.25, 1.0);
                 } else if (distance < 32 * 32) {
                     Component msg = text("Warmer", GOLD, ITALIC);
-                    lines.add(join(noSeparators(), text("Hint ", GREEN), msg));
+                    lines.add(textOfChildren(Mytems.EASTER_EGG, text(" Hint ", GREEN), msg));
                     player.sendActionBar(msg);
                 } else if (distance < 64 * 64) {
                     Component msg = text("Warm", YELLOW, ITALIC);
-                    lines.add(join(noSeparators(), text("Hint ", GREEN), msg));
+                    lines.add(textOfChildren(Mytems.EASTER_EGG, text(" Hint ", GREEN), msg));
                     player.sendActionBar(msg);
                 } else {
                     Vec3i direct = currentEgg.subtract(playerVector);
@@ -502,8 +501,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                     if (messages.isEmpty()) {
                         messages.add("Cold");
                     }
-                    lines.add(text("Hint ", GREEN)
-                              .append(text(String.join(" ", messages), AQUA, ITALIC)));
+                    lines.add(textOfChildren(Mytems.EASTER_EGG, text(" Hint ", GREEN), text(String.join(" ", messages), AQUA, ITALIC)));
                     Vector playerDirection = playerLocation.getDirection();
                     double playerAngle = Math.atan2(playerDirection.getZ(), playerDirection.getX());
                     double targetAngle = Math.atan2((double) direct.z, (double) direct.x);
@@ -521,22 +519,20 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                     }
                 }
             } else {
-                lines.add(text("Visit the Easter World!", GREEN));
+                lines.add(textOfChildren(Mytems.EASTER_EGG, text(" Visit the Easter World!", GREEN)));
             }
-        } else if (user.getEggCooldown() == 0L) {
-            lines.add(easterify("Easter Egg Ready!"));
-            lines.add(text("Visit the Easter World!", GREEN));
+        } else if (user.getEggCooldown() < System.currentTimeMillis()) {
+            lines.add(textOfChildren(Mytems.EASTER_EGG, easterify(" Easter Egg Ready!")));
+            lines.add(textOfChildren(Mytems.EASTER_EGG, text("Visit the Easter World!", GREEN)));
         } else {
             long duration = Math.max(0L, user.getEggCooldown() - System.currentTimeMillis());
             long seconds = duration / 1000L;
             long minutes = seconds / 60L;
             seconds %= 60L;
-            lines.add(easterify("Easter Egg"));
-            lines.add(text().color(WHITE)
-                      .append(text("in ", GREEN))
-                      .append(text(minutes)).append(text("m ", GRAY))
-                      .append(text(seconds)).append(text("s", GRAY))
-                      .build());
+            lines.add(textOfChildren(Mytems.EASTER_EGG, easterify("Easter Egg")));
+            lines.add(textOfChildren(Mytems.EASTER_EGG, text(" in ", GREEN),
+                                     text(minutes, WHITE), text("m ", GRAY),
+                                     text(seconds, WHITE), text("s", GRAY)));
         }
         if (!lines.isEmpty()) {
             event.sidebar(PlayerHudPriority.HIGH, lines);
