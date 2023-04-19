@@ -59,6 +59,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 import static com.cavetale.easter.util.EasterText.easterify;
+import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.textOfChildren;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
@@ -424,6 +425,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
             player.sendMessage(text("You discovered your " + th(totalEggsDiscovered) + " egg! A new egg will spawn in " + minutes + " minutes.")
                                .color(GREEN));
         }
+        player.sendActionBar(empty());
         save();
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.MASTER, 0.2f, 2.0f);
         Fireworks.spawnFirework(location);
