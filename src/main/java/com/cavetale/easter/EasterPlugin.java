@@ -465,24 +465,24 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         Vec3i currentEgg = user.getCurrentEgg();
         List<Component> lines = new ArrayList<>();
         if (currentEgg != null) {
-            lines.add(textOfChildren(Mytems.EASTER_EGG, easterify(" Easter Egg Ready!")));
+            lines.add(textOfChildren(Mytems.EASTER_EGG, easterify("Easter Egg Ready!")));
             Location playerLocation = player.getLocation();
             if (save.getRegion().contains(playerLocation)) {
                 Vec3i playerVector = Vec3i.of(playerLocation);
                 int distance = playerVector.distanceSquared(currentEgg);
                 if (distance < 16 * 16) {
                     Component msg = text("HOT", GOLD, BOLD);
-                    lines.add(textOfChildren(Mytems.EASTER_EGG, text(" Hint ", GREEN), msg));
+                    lines.add(textOfChildren(Mytems.EASTER_EGG, text("Hint ", GREEN), msg));
                     player.sendActionBar(msg);
                     Location loc = currentEgg.toBlock(player.getWorld()).getLocation().add(0.5, 0.5, 0.5);
                     player.spawnParticle(Particle.SPELL_MOB, loc, 1, 0.25, 0.25, 0.25, 1.0);
                 } else if (distance < 32 * 32) {
                     Component msg = text("Warmer", GOLD, ITALIC);
-                    lines.add(textOfChildren(Mytems.EASTER_EGG, text(" Hint ", GREEN), msg));
+                    lines.add(textOfChildren(Mytems.EASTER_EGG, text("Hint ", GREEN), msg));
                     player.sendActionBar(msg);
                 } else if (distance < 64 * 64) {
                     Component msg = text("Warm", YELLOW, ITALIC);
-                    lines.add(textOfChildren(Mytems.EASTER_EGG, text(" Hint ", GREEN), msg));
+                    lines.add(textOfChildren(Mytems.EASTER_EGG, text("Hint ", GREEN), msg));
                     player.sendActionBar(msg);
                 } else {
                     Vec3i direct = currentEgg.subtract(playerVector);
@@ -501,7 +501,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                     if (messages.isEmpty()) {
                         messages.add("Cold");
                     }
-                    lines.add(textOfChildren(Mytems.EASTER_EGG, text(" Hint ", GREEN), text(String.join(" ", messages), AQUA, ITALIC)));
+                    lines.add(textOfChildren(Mytems.EASTER_EGG, text("Hint ", GREEN), text(String.join(" ", messages), AQUA, ITALIC)));
                     Vector playerDirection = playerLocation.getDirection();
                     double playerAngle = Math.atan2(playerDirection.getZ(), playerDirection.getX());
                     double targetAngle = Math.atan2((double) direct.z, (double) direct.x);
@@ -519,10 +519,10 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                     }
                 }
             } else {
-                lines.add(textOfChildren(Mytems.EASTER_EGG, text(" Visit the Easter World!", GREEN)));
+                lines.add(textOfChildren(Mytems.EASTER_EGG, text("Visit the Easter World!", GREEN)));
             }
         } else if (user.getEggCooldown() < System.currentTimeMillis()) {
-            lines.add(textOfChildren(Mytems.EASTER_EGG, easterify(" Easter Egg Ready!")));
+            lines.add(textOfChildren(Mytems.EASTER_EGG, easterify("Easter Egg Ready!")));
             lines.add(textOfChildren(Mytems.EASTER_EGG, text("Visit the Easter World!", GREEN)));
         } else {
             long duration = Math.max(0L, user.getEggCooldown() - System.currentTimeMillis());
@@ -530,7 +530,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
             long minutes = seconds / 60L;
             seconds %= 60L;
             lines.add(textOfChildren(Mytems.EASTER_EGG, easterify("Easter Egg")));
-            lines.add(textOfChildren(Mytems.EASTER_EGG, text(" in ", GREEN),
+            lines.add(textOfChildren(Mytems.EASTER_EGG, text("in ", GREEN),
                                      text(minutes, WHITE), text("m ", GRAY),
                                      text(seconds, WHITE), text("s", GRAY)));
         }
