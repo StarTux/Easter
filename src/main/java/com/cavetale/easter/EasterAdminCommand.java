@@ -2,6 +2,7 @@ package com.cavetale.easter;
 
 import com.cavetale.core.command.AbstractCommand;
 import com.cavetale.core.command.CommandArgCompleter;
+import com.cavetale.core.command.CommandNode;
 import com.cavetale.core.command.CommandWarn;
 import com.cavetale.core.playercache.PlayerCache;
 import com.cavetale.core.struct.Cuboid;
@@ -57,6 +58,11 @@ final class EasterAdminCommand extends AbstractCommand<EasterPlugin> {
             .description("Skip player egg cooldown")
             .completers(CommandArgCompleter.NULL)
             .senderCaller(this::skipCooldown);
+        CommandNode scoreNode = rootNode.addChild("score")
+            .description("Score subcommands");
+        scoreNode.addChild("reward").denyTabCompletion()
+            .description("Reward the top 10")
+            .senderCaller(this::scoreReward);
     }
 
     private boolean setArea(Player player, String[] args) {
@@ -192,5 +198,18 @@ final class EasterAdminCommand extends AbstractCommand<EasterPlugin> {
         user.setEggCooldown(0L);
         sender.sendMessage("Egg cooldown cleared: " + player.name);
         return true;
+    }
+
+    private void scoreReward(CommandSender sender) {
+        int count = 0;
+        for (var hi : plugin.getHighscore()) {
+            if (hi.getPlacement() > 10) return;
+            plugin.getLogger().info(hi.getPlacement() + ") " + hi.getScore() + " " + hi.name());
+            String cmd = "titles unlockset " + hi.name() + " EggSmash";
+            plugin.getLogger().info("Dispatching command: " + cmd);
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+            count += 1;
+        }
+        sender.sendMessage(text(count + " players rewarded", AQUA));
     }
 }

@@ -11,6 +11,7 @@ import com.cavetale.easter.struct.Region;
 import com.cavetale.easter.struct.Save;
 import com.cavetale.easter.struct.User;
 import com.cavetale.easter.util.Fireworks;
+import com.cavetale.fam.trophy.Highscore;
 import com.cavetale.mytems.Mytems;
 import com.cavetale.mytems.item.easter.EasterEggColor;
 import com.cavetale.mytems.util.Entities;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
+import java.util.UUID;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
@@ -571,5 +573,13 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         if (save.getRegion().contains(query.getEntity().getLocation())) {
             query.setCancelled(true);
         }
+    }
+
+    public List<Highscore> getHighscore() {
+        Map<UUID, Integer> map = new HashMap<>();
+        for (User user : save.getUsers().values()) {
+            map.put(user.getUuid(), user.getTotalEggsDiscovered());
+        }
+        return Highscore.of(map);
     }
 }
