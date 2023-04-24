@@ -83,8 +83,10 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         if (save.getRegion() != null) {
             loadChunks(save.getRegion());
         }
-        Bukkit.getScheduler().runTaskTimer(this, this::tickPlayers, 20L, 20L);
-        Bukkit.getPluginManager().registerEvents(this, this);
+        if (Timer.getEasterDay() != 0) {
+            Bukkit.getScheduler().runTaskTimer(this, this::tickPlayers, 20L, 20L);
+            Bukkit.getPluginManager().registerEvents(this, this);
+        }
         new EasterAdminCommand(this).enable();
         new EasterCommand(this).enable();
         trades.enable();
@@ -112,9 +114,12 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
     }
 
     private void tickPlayers() {
+        if (Timer.getEasterDay() == 0) return;
         if (save.getRegion() == null) return;
+        World world = save.getRegion().toWorld();
+        if (world == null) return;
         evilMobs.removeIf(e -> !e.isValid());
-        for (Player player : save.getRegion().toWorld().getPlayers()) {
+        for (Player player : world.getPlayers()) {
             if (player.getGameMode() != GameMode.SURVIVAL && player.getGameMode() != GameMode.ADVENTURE) {
                 continue;
             }

@@ -47,9 +47,6 @@ final class EasterAdminCommand extends AbstractCommand<EasterPlugin> {
             .description("Open token merchant")
             .completers(CommandArgCompleter.NULL)
             .senderCaller(this::tokenMerchant);
-        rootNode.addChild("maketrophies").denyTabCompletion()
-            .description("Make Event Trophies")
-            .senderCaller(this::makeTrophies);
         rootNode.addChild("clearegg").arguments("<player>")
             .description("Clear current player egg")
             .completers(CommandArgCompleter.NULL)
@@ -63,6 +60,9 @@ final class EasterAdminCommand extends AbstractCommand<EasterPlugin> {
         scoreNode.addChild("reward").denyTabCompletion()
             .description("Reward the top 10")
             .senderCaller(this::scoreReward);
+        scoreNode.addChild("maketrophies").denyTabCompletion()
+            .description("Make Event Trophies")
+            .senderCaller(this::makeTrophies);
     }
 
     private boolean setArea(Player player, String[] args) {
@@ -165,10 +165,10 @@ final class EasterAdminCommand extends AbstractCommand<EasterPlugin> {
             default: mytems = Mytems.EASTER_TOKEN;
             }
             trophies.add(new SQLTrophy(uuid,
-                                      "easter/egg_hunt_2022",
-                                      placement,
-                                      mytems,
-                                      easterify("Easter Egg Hunt 2022"),
+                                       "easter/egg_hunt_" + Timer.getYear(),
+                                       placement,
+                                       mytems,
+                                       easterify("Easter Egg Hunt " + Timer.getYear()),
                                        "You collected " + eggs + " Easter Egg" + (eggs != 1 ? "s" : "") + "!"));
         }
         Trophies.insertTrophies(trophies);
@@ -204,8 +204,9 @@ final class EasterAdminCommand extends AbstractCommand<EasterPlugin> {
         int count = 0;
         for (var hi : plugin.getHighscore()) {
             if (hi.getPlacement() > 10) return;
-            plugin.getLogger().info(hi.getPlacement() + ") " + hi.getScore() + " " + hi.name());
-            String cmd = "titles unlockset " + hi.name() + " EggSmash";
+            String name = PlayerCache.nameForUuid(hi.uuid);
+            plugin.getLogger().info(hi.getPlacement() + ") " + hi.getScore() + " " + name);
+            String cmd = "titles unlockset " + name + " EggSmash";
             plugin.getLogger().info("Dispatching command: " + cmd);
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
             count += 1;
