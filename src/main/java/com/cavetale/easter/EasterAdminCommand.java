@@ -203,7 +203,7 @@ final class EasterAdminCommand extends AbstractCommand<EasterPlugin> {
     private void scoreReward(CommandSender sender) {
         int count = 0;
         for (var hi : plugin.getHighscore()) {
-            if (hi.getPlacement() > 10) return;
+            if (hi.getPlacement() > 10) break;
             String name = PlayerCache.nameForUuid(hi.uuid);
             plugin.getLogger().info(hi.getPlacement() + ") " + hi.getScore() + " " + name);
             String cmd = "titles unlockset " + name + " EggSmash";
