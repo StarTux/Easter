@@ -11,7 +11,7 @@ import com.cavetale.easter.struct.Region;
 import com.cavetale.easter.struct.User;
 import com.cavetale.fam.trophy.SQLTrophy;
 import com.cavetale.fam.trophy.Trophies;
-import com.cavetale.mytems.Mytems;
+import com.cavetale.mytems.item.trophy.TrophyCategory;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -157,17 +157,10 @@ final class EasterAdminCommand extends AbstractCommand<EasterPlugin> {
                 placement += 1;
                 previousEggs = eggs;
             }
-            final Mytems mytems;
-            switch (placement) {
-            case 1: mytems = Mytems.GOLD_MEDAL; break;
-            case 2: mytems = Mytems.SILVER_MEDAL; break;
-            case 3: mytems = Mytems.BRONZE_MEDAL; break;
-            default: mytems = Mytems.EASTER_TOKEN;
-            }
             trophies.add(new SQLTrophy(uuid,
-                                       "easter/egg_hunt_" + Timer.getYear(),
+                                       "easter_egg_hunt",
                                        placement,
-                                       mytems,
+                                       TrophyCategory.EASTER,
                                        easterify("Easter Egg Hunt " + Timer.getYear()),
                                        "You collected " + eggs + " Easter Egg" + (eggs != 1 ? "s" : "") + "!"));
         }
