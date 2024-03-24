@@ -102,6 +102,7 @@ public final class Trades implements Listener {
         recipes.add(makeTokenRecipe(player, 10, Mytems.EASTER_CHESTPLATE, true));
         recipes.add(makeTokenRecipe(player, 10, Mytems.EASTER_LEGGINGS, true));
         recipes.add(makeTokenRecipe(player, 10, Mytems.EASTER_BOOTS, true));
+        recipes.add(makeTokenRecipe(player, 20, Mytems.MAGIC_CAPE, true));
         recipes.add(makeTokenRecipe(player, 2, Mytems.KITTY_COIN, false));
         merchant.setRecipes(recipes);
         return merchant;
