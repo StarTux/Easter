@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
+import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
@@ -62,8 +63,11 @@ import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 import static com.cavetale.easter.util.EasterText.easterify;
 import static net.kyori.adventure.text.Component.empty;
+import static net.kyori.adventure.text.Component.join;
+import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.textOfChildren;
+import static net.kyori.adventure.text.JoinConfiguration.separator;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextDecoration.*;
 
@@ -486,6 +490,9 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         Vec3i currentEgg = user.getCurrentEgg();
         List<Component> lines = new ArrayList<>();
         if (currentEgg != null) {
+            final List<Component> boss = new ArrayList<>();
+            boss.add(Mytems.EASTER_EGG.asComponent());
+            boss.add(easterify("Easter Egg"));
             lines.add(textOfChildren(Mytems.EASTER_EGG, easterify("Easter Egg Ready!")));
             Location playerLocation = player.getLocation();
             if (save.getRegion().contains(playerLocation)) {
@@ -494,16 +501,19 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                 if (distance < 16 * 16) {
                     Component msg = text("HOT", GOLD, BOLD);
                     lines.add(textOfChildren(Mytems.EASTER_EGG, text("Hint ", GREEN), msg));
+                    boss.add(msg);
                     player.sendActionBar(msg);
                     Location loc = currentEgg.toBlock(player.getWorld()).getLocation().add(0.5, 0.5, 0.5);
                     player.spawnParticle(Particle.SPELL_MOB, loc, 1, 0.25, 0.25, 0.25, 1.0);
                 } else if (distance < 32 * 32) {
                     Component msg = text("Warmer", GOLD, ITALIC);
                     lines.add(textOfChildren(Mytems.EASTER_EGG, text("Hint ", GREEN), msg));
+                    boss.add(msg);
                     player.sendActionBar(msg);
                 } else if (distance < 64 * 64) {
                     Component msg = text("Warm", YELLOW, ITALIC);
                     lines.add(textOfChildren(Mytems.EASTER_EGG, text("Hint ", GREEN), msg));
+                    boss.add(msg);
                     player.sendActionBar(msg);
                 } else {
                     Vec3i direct = currentEgg.subtract(playerVector);
@@ -523,6 +533,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                         messages.add("Cold");
                     }
                     lines.add(textOfChildren(Mytems.EASTER_EGG, text("Hint ", GREEN), text(String.join(" ", messages), AQUA, ITALIC)));
+                    boss.add(text(String.join(" ", messages), AQUA, ITALIC));
                     Vector playerDirection = playerLocation.getDirection();
                     double playerAngle = Math.atan2(playerDirection.getZ(), playerDirection.getX());
                     double targetAngle = Math.atan2((double) direct.z, (double) direct.x);
@@ -539,6 +550,8 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                         }
                     }
                 }
+                boss.add(Mytems.EASTER_EGG.asComponent());
+                event.bossbar(PlayerHudPriority.DEFAULT, join(separator(space()), boss), BossBar.Color.PINK, BossBar.Overlay.PROGRESS, 1f);
             } else {
                 lines.add(textOfChildren(Mytems.EASTER_EGG, text("Visit the Easter World!", GREEN)));
             }
