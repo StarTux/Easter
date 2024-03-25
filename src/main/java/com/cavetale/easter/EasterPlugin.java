@@ -215,6 +215,10 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                 if (isLiquid(above)) continue;
                 if (!above.getCollisionShape().getBoundingBoxes().isEmpty()) continue;
                 if (above.getLightFromSky() < 8) continue;
+                switch (above.getType()) {
+                case POWDER_SNOW: continue;
+                default: break;
+                }
                 // One free block above
                 if (!above.getRelative(0, 1, 0).getCollisionShape().getBoundingBoxes().isEmpty()) continue;
                 // Some free neighbors
