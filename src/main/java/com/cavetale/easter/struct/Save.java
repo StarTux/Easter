@@ -9,7 +9,7 @@ import lombok.Data;
 
 @Data
 public final class Save {
-    private Region region = null;
+    private Region region = Region.ZERO;
     private Map<UUID, User> users = new HashMap<>();
 
     public User userOf(UUID uuid) {

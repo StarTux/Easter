@@ -9,6 +9,7 @@ import org.bukkit.block.Block;
 
 @Value
 public final class Region {
+    public static final Region ZERO = new Region("", Cuboid.ZERO);
     protected final String world;
     protected final Cuboid cuboid;
 
