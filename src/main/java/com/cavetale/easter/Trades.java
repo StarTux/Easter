@@ -3,7 +3,6 @@ package com.cavetale.easter;
 import com.cavetale.easter.struct.User;
 import com.cavetale.mytems.Mytems;
 import com.cavetale.mytems.item.easter.EasterEggColor;
-import com.cavetale.mytems.util.Items;
 import com.cavetale.worldmarker.util.Tags;
 import com.winthier.title.Title;
 import com.winthier.title.TitlePlugin;
@@ -25,6 +24,7 @@ import org.bukkit.inventory.MerchantRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import static com.cavetale.easter.util.EasterText.easterify;
+import static com.cavetale.mytems.util.Items.tooltip;
 import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
@@ -129,7 +129,7 @@ public final class Trades implements Listener {
             : 0;
         ItemStack prize = Mytems.RUBY.createItemStack();
         if (title != null) {
-            prize = Items.text(prize, List.of(new Component[] {
+            prize = tooltip(prize, List.of(new Component[] {
                         title.getTitleComponent(),
                         text("" + title.getDescription(), DARK_GRAY),
                         easterify("Unlock this title!"),
