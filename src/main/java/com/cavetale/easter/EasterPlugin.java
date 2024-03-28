@@ -466,6 +466,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                         e.setRemoveWhenFarAway(true);
                         e.setColor(DyeColor.PINK);
                         e.setBaby();
+                        e.setAgeLock(true);
                     });
             }
         } else {
@@ -479,6 +480,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                         Rabbit.Type type = types.get(random.nextInt(types.size()));
                         e.setRabbitType(type);
                         e.setBaby();
+                        e.setAgeLock(true);
                     });
             }
         }
