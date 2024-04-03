@@ -1,7 +1,5 @@
 package com.cavetale.easter;
 
-import com.cavetale.core.event.block.PlayerBlockAbilityQuery;
-import com.cavetale.core.event.entity.PlayerEntityAbilityQuery;
 import com.cavetale.core.event.hud.PlayerHudEvent;
 import com.cavetale.core.event.hud.PlayerHudPriority;
 import com.cavetale.core.playercache.PlayerCache;
@@ -57,8 +55,6 @@ import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 import static com.cavetale.easter.util.EasterText.easterify;
@@ -370,36 +366,37 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         if (event.getDamager() instanceof Player player) {
             if (save.getRegion() == null) return;
             Vec3i vector = Vec3i.of(event.getEntity().getLocation());
-            onHitBlock(player, vector);
-            event.setCancelled(true);
+            if (onHitBlock(player, vector)) {
+                event.setCancelled(true);
+            }
             return;
         }
         if (event.getDamager().getType() == EntityType.FIREWORK) {
             event.setCancelled(true);
             return;
         }
-        if (event.getEntity() instanceof Player) {
-            Player player = (Player) event.getEntity();
-            event.setDamage(0.0);
-            final Entity damager = event.getDamager();
-            switch (damager.getType()) {
-            case RABBIT:
-            case BEE:
-                PotionEffect potionEffect = new PotionEffect(PotionEffectType.LEVITATION, 100, 0, true, true, true);
-                player.addPotionEffect(potionEffect);
-                Bukkit.getScheduler().runTaskLater(this, () -> {
-                        if (damager.isValid()) {
-                            Particle.DustOptions dust = new Particle.DustOptions(Color.fromRGB(255, 105, 180), 1.5f);
-                            damager.getWorld().spawnParticle(Particle.REDSTONE, damager.getLocation(), 16, .25, .25, .25, 0, dust);
-                            damager.remove();
-                        }
-                    }, 20L);
-                break;
-            default:
-                break;
-            }
-            return;
-        }
+        // if (event.getEntity() instanceof Player) {
+        //     Player player = (Player) event.getEntity();
+        //     event.setDamage(0.0);
+        //     final Entity damager = event.getDamager();
+        //     switch (damager.getType()) {
+        //     case RABBIT:
+        //     case BEE:
+        //         PotionEffect potionEffect = new PotionEffect(PotionEffectType.LEVITATION, 100, 0, true, true, true);
+        //         player.addPotionEffect(potionEffect);
+        //         Bukkit.getScheduler().runTaskLater(this, () -> {
+        //                 if (damager.isValid()) {
+        //                     Particle.DustOptions dust = new Particle.DustOptions(Color.fromRGB(255, 105, 180), 1.5f);
+        //                     damager.getWorld().spawnParticle(Particle.REDSTONE, damager.getLocation(), 16, .25, .25, .25, 0, dust);
+        //                     damager.remove();
+        //                 }
+        //             }, 20L);
+        //         break;
+        //     default:
+        //         break;
+        //     }
+        //     return;
+        // }
     }
 
     @EventHandler(ignoreCancelled = false)
@@ -409,17 +406,23 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         if (save.getRegion() == null) return;
         Block block = event.getClickedBlock();
         if (!Objects.equals(block.getWorld(), save.getRegion().toWorld())) return;
-        onHitBlock(event.getPlayer(), Vec3i.of(block));
+        if (onHitBlock(event.getPlayer(), Vec3i.of(block))) {
+            event.setCancelled(true);
+        }
     }
 
-    private void onHitBlock(Player player, Vec3i vector) {
+    /**
+     * Player hits a block.
+     * @return true if block contains an easter egg, false otherwise.
+     */
+    private boolean onHitBlock(Player player, Vec3i vector) {
         EasterEgg easterEgg = easterEggMap.get(vector);
-        if (easterEgg == null) return;
-        if (!(player.hasPermission("easter.hunt"))) return;
+        if (easterEgg == null) return false;
+        if (!(player.hasPermission("easter.hunt"))) return true;
         if (!Objects.equals(player.getUniqueId(), easterEgg.owner)) {
             String name = PlayerCache.nameForUuid(easterEgg.owner);
             player.sendMessage(text("This egg belongs to " + name + "!").color(RED));
-            return;
+            return true;
         }
         // Drop item frame
         easterEggMap.remove(vector);
@@ -484,6 +487,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                     });
             }
         }
+        return true;
     }
 
     @EventHandler
@@ -576,26 +580,6 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         }
         if (!lines.isEmpty()) {
             event.sidebar(PlayerHudPriority.HIGH, lines);
-        }
-    }
-
-    @EventHandler
-    private void onPlayerBlockAbility(PlayerBlockAbilityQuery query) {
-        if (save.getRegion() == null) return;
-        if (save.getRegion().contains(query.getBlock())) {
-            switch (query.getAction()) {
-            case FLY: return;
-            default:
-                query.setCancelled(true);
-            }
-        }
-    }
-
-    @EventHandler
-    private void onPlayerEntityAbiltiy(PlayerEntityAbilityQuery query) {
-        if (save.getRegion() == null) return;
-        if (save.getRegion().contains(query.getEntity().getLocation())) {
-            query.setCancelled(true);
         }
     }
 
