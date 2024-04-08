@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -54,13 +53,10 @@ public final class EasterCommand extends AbstractCommand<EasterPlugin> {
                 rank += 1;
                 lastScore = score;
             }
-            Player player = Bukkit.getPlayer(uuid);
             sender.sendMessage(textOfChildren(Glyph.toComponent("" + rank),
                                               text(subscript("" + score), GRAY),
                                               space(),
-                                              (player != null
-                                               ? player.displayName()
-                                               : text("" + PlayerCache.nameForUuid(uuid), WHITE))));
+                                              text("" + PlayerCache.nameForUuid(uuid), WHITE)));
         }
     }
 }
