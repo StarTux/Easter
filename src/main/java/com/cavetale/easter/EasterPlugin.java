@@ -371,7 +371,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
             }
             return;
         }
-        if (event.getDamager().getType() == EntityType.FIREWORK) {
+        if (event.getDamager().getType() == EntityType.FIREWORK_ROCKET) {
             event.setCancelled(true);
             return;
         }
@@ -387,7 +387,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         //         Bukkit.getScheduler().runTaskLater(this, () -> {
         //                 if (damager.isValid()) {
         //                     Particle.DustOptions dust = new Particle.DustOptions(Color.fromRGB(255, 105, 180), 1.5f);
-        //                     damager.getWorld().spawnParticle(Particle.REDSTONE, damager.getLocation(), 16, .25, .25, .25, 0, dust);
+        //                     damager.getWorld().spawnParticle(Particle.DUST, damager.getLocation(), 16, .25, .25, .25, 0, dust);
         //                     damager.remove();
         //                 }
         //             }, 20L);
@@ -460,7 +460,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.MASTER, 0.2f, 2.0f);
         Fireworks.spawnFirework(location);
         Particle.DustOptions dust = new Particle.DustOptions(Color.fromRGB(255, 105, 180), 1.5f);
-        location.getWorld().spawnParticle(Particle.REDSTONE, location, 16, .25, .25, .25, 0, dust);
+        location.getWorld().spawnParticle(Particle.DUST, location, 16, .25, .25, .25, 0, dust);
         if (random.nextBoolean()) {
             int count = 1 + random.nextInt(3);
             for (int i = 0; i < count; i += 1) {
@@ -514,7 +514,8 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                     boss.add(msg);
                     player.sendActionBar(msg);
                     Location loc = currentEgg.toBlock(player.getWorld()).getLocation().add(0.5, 0.5, 0.5);
-                    player.spawnParticle(Particle.SPELL_MOB, loc, 1, 0.25, 0.25, 0.25, 1.0);
+                    // TODO test this effect
+                    player.spawnParticle(Particle.INSTANT_EFFECT, loc, 1, 0.25, 0.25, 0.25, 1.0);
                 } else if (distance < 32 * 32) {
                     Component msg = text("Warmer", GOLD, ITALIC);
                     lines.add(textOfChildren(Mytems.EASTER_EGG, text("Hint ", GREEN), msg));
