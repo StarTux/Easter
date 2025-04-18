@@ -25,6 +25,10 @@ public final class Region {
         return location.getWorld().getName().equals(world) && cuboid.contains(location);
     }
 
+    public boolean isInWorld(World bukkitWorld) {
+        return world.equals(bukkitWorld.getName());
+    }
+
     @Override
     public String toString() {
         return world + ":" + cuboid;

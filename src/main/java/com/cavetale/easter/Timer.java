@@ -15,27 +15,27 @@ public final class Timer {
     @Getter private static int day;
     @Getter private static int hour;
     @Getter private static int dayOfWeek;
-    public static final int ONE = 20240324;
-    public static final int END = 20240407;
+    public static final int ONE = 2025_04_19;
+    public static final int END = 2025_05_03;
     private static final int[] EASTER_DAYS = {
         ONE,
-        20240325,
-        20240326,
-        20240327,
-        20240328,
-        20240329,
-        20240330,
-        20240331,
-        20240401,
-        20240402,
-        20240403,
-        20240404,
-        20240405,
-        20240406,
+        2025_04_20,
+        2025_04_21,
+        2025_04_22,
+        2025_04_23,
+        2025_04_24,
+        2025_04_25,
+        2025_04_26,
+        2025_04_27,
+        2025_04_28,
+        2025_04_29,
+        2025_04_30,
+        2025_05_01,
+        2025_05_02,
         END,
     };
     public static final int DAYS = EASTER_DAYS.length;
-    public static final int EGGS_PER_DAY = 7;
+    public static final int EGGS_PER_DAY = 10;
     public static final ZoneId ZONE_ID = ZoneId.of("UTC-11");
 
     private Timer() { }

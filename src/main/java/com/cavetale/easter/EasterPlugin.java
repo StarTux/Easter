@@ -2,6 +2,7 @@ package com.cavetale.easter;
 
 import com.cavetale.core.event.hud.PlayerHudEvent;
 import com.cavetale.core.event.hud.PlayerHudPriority;
+import com.cavetale.core.money.Money;
 import com.cavetale.core.playercache.PlayerCache;
 import com.cavetale.core.struct.Vec3i;
 import com.cavetale.core.util.Json;
@@ -74,15 +75,14 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
     protected List<Entity> evilMobs = new ArrayList<>();
     protected Random random = new Random();
     protected Trades trades = new Trades(this);
+    private List<Component> sidebar = List.of();
 
     @Override
     public void onEnable() {
         instance = this;
         Timer.enable();
         save = Json.load(new File(getDataFolder(), "save.json"), Save.class, Save::new);
-        if (save.getRegion() != null) {
-            loadChunks(save.getRegion());
-        }
+        loadChunks(save.getRegion());
         if (Timer.getEasterDay() != 0) {
             Bukkit.getScheduler().runTaskTimer(this, this::tickPlayers, 20L, 20L);
             Bukkit.getPluginManager().registerEvents(this, this);
@@ -90,6 +90,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         new EasterAdminCommand(this).enable();
         new EasterCommand(this).enable();
         trades.enable();
+        buildSidebar();
     }
 
     @Override
@@ -115,7 +116,6 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
 
     private void tickPlayers() {
         if (Timer.getEasterDay() == 0) return;
-        if (save.getRegion() == null) return;
         World world = save.getRegion().toWorld();
         if (world == null) return;
         evilMobs.removeIf(e -> !e.isValid());
@@ -124,7 +124,6 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                 continue;
             }
             if (!player.hasPermission("easter.hunt")) continue;
-            if (!save.getRegion().contains(player.getLocation())) continue;
             User user = save.userOf(player.getUniqueId());
             tickPlayer(player, user);
             // long now = System.currentTimeMillis();
@@ -295,10 +294,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         for (World world : Bukkit.getWorlds()) {
             world.removePluginChunkTickets(this);
         }
-        if (save.getRegion() != null) {
-            return loadChunks(save.getRegion());
-        }
-        return 0;
+        return loadChunks(save.getRegion());
     }
 
     public int loadChunks(Region region) {
@@ -324,10 +320,9 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
 
     @EventHandler
     private void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
-        if (save.getRegion() == null) return;
         if (!(event.getRightClicked() instanceof ItemFrame)) return;
         ItemFrame itemFrame = (ItemFrame) event.getRightClicked();
-        if (!Objects.equals(itemFrame.getWorld(), save.getRegion().toWorld())) return;
+        if (!save.getRegion().isInWorld(itemFrame.getWorld())) return;
         Vec3i vector = Vec3i.of(itemFrame.getLocation());
         EasterEgg easterEgg = easterEggMap.get(vector);
         if (easterEgg == null) return;
@@ -336,10 +331,9 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
 
     @EventHandler
     private void onHangingBreak(HangingBreakEvent event) {
-        if (save.getRegion() == null) return;
         if (!(event.getEntity() instanceof ItemFrame)) return;
         ItemFrame itemFrame = (ItemFrame) event.getEntity();
-        if (!Objects.equals(itemFrame.getWorld(), save.getRegion().toWorld())) return;
+        if (!save.getRegion().isInWorld(itemFrame.getWorld())) return;
         Vec3i vector = Vec3i.of(itemFrame.getLocation());
         EasterEgg easterEgg = easterEggMap.get(vector);
         if (easterEgg == null) return;
@@ -362,9 +356,8 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
 
     @EventHandler
     private void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
-        if (!Objects.equals(event.getEntity().getWorld(), save.getRegion().toWorld())) return;
+        if (!save.getRegion().isInWorld(event.getEntity().getWorld())) return;
         if (event.getDamager() instanceof Player player) {
-            if (save.getRegion() == null) return;
             Vec3i vector = Vec3i.of(event.getEntity().getLocation());
             if (onHitBlock(player, vector)) {
                 event.setCancelled(true);
@@ -403,9 +396,8 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
     private void onPlayerInteract(PlayerInteractEvent event) {
         if (event.getAction() != Action.LEFT_CLICK_BLOCK) return;
         if (!event.hasBlock()) return;
-        if (save.getRegion() == null) return;
         Block block = event.getClickedBlock();
-        if (!Objects.equals(block.getWorld(), save.getRegion().toWorld())) return;
+        if (!save.getRegion().isInWorld(block.getWorld())) return;
         if (onHitBlock(event.getPlayer(), Vec3i.of(block))) {
             event.setCancelled(true);
         }
@@ -457,6 +449,11 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
         }
         player.sendActionBar(empty());
         save();
+        buildSidebar();
+        Money.get().give(player.getUniqueId(), 1000.0, this, "Easter Egg Hunt");
+        if (totalEggsDiscovered % 10 == 0) {
+            Mytems.KITTY_COIN.giveItemStack(player, 1);
+        }
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.MASTER, 0.2f, 2.0f);
         Fireworks.spawnFirework(location);
         Particle.DustOptions dust = new Particle.DustOptions(Color.fromRGB(255, 105, 180), 1.5f);
@@ -492,9 +489,11 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
 
     @EventHandler
     private void onPlayerHud(PlayerHudEvent event) {
-        if (save.getRegion() == null) return;
         Player player = event.getPlayer();
         if (!(player.hasPermission("easter.hunt"))) return;
+        if (!save.getRegion().isInWorld(player.getWorld())) {
+            return;
+        }
         if (Timer.getEasterDay() == 0) return;
         User user = save.userOf(player.getUniqueId());
         Vec3i currentEgg = user.getCurrentEgg();
@@ -505,70 +504,65 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
             boss.add(easterify("Easter Egg"));
             lines.add(textOfChildren(Mytems.EASTER_EGG, easterify("Easter Egg Ready!")));
             Location playerLocation = player.getLocation();
-            if (save.getRegion().contains(playerLocation)) {
-                Vec3i playerVector = Vec3i.of(playerLocation);
-                int distance = playerVector.distanceSquared(currentEgg);
-                if (distance < 16 * 16) {
-                    Component msg = text("HOT", GOLD, BOLD);
-                    lines.add(textOfChildren(Mytems.EASTER_EGG, text("Hint ", GREEN), msg));
-                    boss.add(msg);
-                    player.sendActionBar(msg);
-                    Location loc = currentEgg.toBlock(player.getWorld()).getLocation().add(0.5, 0.5, 0.5);
-                    // TODO test this effect
-                    player.spawnParticle(Particle.INSTANT_EFFECT, loc, 1, 0.25, 0.25, 0.25, 1.0);
-                } else if (distance < 32 * 32) {
-                    Component msg = text("Warmer", GOLD, ITALIC);
-                    lines.add(textOfChildren(Mytems.EASTER_EGG, text("Hint ", GREEN), msg));
-                    boss.add(msg);
-                    player.sendActionBar(msg);
-                } else if (distance < 64 * 64) {
-                    Component msg = text("Warm", YELLOW, ITALIC);
-                    lines.add(textOfChildren(Mytems.EASTER_EGG, text("Hint ", GREEN), msg));
-                    boss.add(msg);
-                    player.sendActionBar(msg);
-                } else {
-                    Vec3i direct = currentEgg.subtract(playerVector);
-                    List<String> messages = new ArrayList<>();
-                    final int min = 32;
-                    if (direct.z > min) {
-                        messages.add("South");
-                    } else if (direct.z < -min) {
-                        messages.add("North");
-                    }
-                    if (direct.x > min) {
-                        messages.add("East");
-                    } else if (direct.x < -min) {
-                        messages.add("West");
-                    }
-                    if (messages.isEmpty()) {
-                        messages.add("Cold");
-                    }
-                    lines.add(textOfChildren(Mytems.EASTER_EGG, text("Hint ", GREEN), text(String.join(" ", messages), AQUA, ITALIC)));
-                    boss.add(text(String.join(" ", messages), AQUA, ITALIC));
-                    Vector playerDirection = playerLocation.getDirection();
-                    double playerAngle = Math.atan2(playerDirection.getZ(), playerDirection.getX());
-                    double targetAngle = Math.atan2((double) direct.z, (double) direct.x);
-                    if (Double.isFinite(playerAngle) && Double.isFinite(targetAngle)) {
-                        double angle = targetAngle - playerAngle;
-                        if (angle > Math.PI) angle -= 2.0 * Math.PI;
-                        if (angle < -Math.PI) angle += 2.0 * Math.PI;
-                        if (angle < Math.PI * -0.5) {
-                            player.sendActionBar(Mytems.ARROW_LEFT.component);
-                        } else if (angle > Math.PI * 0.5) {
-                            player.sendActionBar(Mytems.ARROW_RIGHT.component);
-                        } else {
-                            player.sendActionBar(Mytems.ARROW_UP.component);
-                        }
+            Vec3i playerVector = Vec3i.of(playerLocation);
+            int distance = playerVector.distanceSquared(currentEgg);
+            if (distance < 16 * 16) {
+                Component msg = text("HOT", GOLD, BOLD);
+                lines.add(textOfChildren(Mytems.EASTER_EGG, text("Hint ", GREEN), msg));
+                boss.add(msg);
+                player.sendActionBar(msg);
+                Location loc = currentEgg.toBlock(player.getWorld()).getLocation().add(0.5, 0.5, 0.5);
+                // TODO test this effect
+                player.spawnParticle(Particle.INSTANT_EFFECT, loc, 1, 0.25, 0.25, 0.25, 1.0);
+            } else if (distance < 32 * 32) {
+                Component msg = text("Warmer", GOLD, ITALIC);
+                lines.add(textOfChildren(Mytems.EASTER_EGG, text("Hint ", GREEN), msg));
+                boss.add(msg);
+                player.sendActionBar(msg);
+            } else if (distance < 64 * 64) {
+                Component msg = text("Warm", YELLOW, ITALIC);
+                lines.add(textOfChildren(Mytems.EASTER_EGG, text("Hint ", GREEN), msg));
+                boss.add(msg);
+                player.sendActionBar(msg);
+            } else {
+                Vec3i direct = currentEgg.subtract(playerVector);
+                List<String> messages = new ArrayList<>();
+                final int min = 32;
+                if (direct.z > min) {
+                    messages.add("South");
+                } else if (direct.z < -min) {
+                    messages.add("North");
+                }
+                if (direct.x > min) {
+                    messages.add("East");
+                } else if (direct.x < -min) {
+                    messages.add("West");
+                }
+                if (messages.isEmpty()) {
+                    messages.add("Cold");
+                }
+                lines.add(textOfChildren(Mytems.EASTER_EGG, text("Hint ", GREEN), text(String.join(" ", messages), AQUA, ITALIC)));
+                boss.add(text(String.join(" ", messages), AQUA, ITALIC));
+                Vector playerDirection = playerLocation.getDirection();
+                double playerAngle = Math.atan2(playerDirection.getZ(), playerDirection.getX());
+                double targetAngle = Math.atan2((double) direct.z, (double) direct.x);
+                if (Double.isFinite(playerAngle) && Double.isFinite(targetAngle)) {
+                    double angle = targetAngle - playerAngle;
+                    if (angle > Math.PI) angle -= 2.0 * Math.PI;
+                    if (angle < -Math.PI) angle += 2.0 * Math.PI;
+                    if (angle < Math.PI * -0.5) {
+                        player.sendActionBar(Mytems.ARROW_LEFT.component);
+                    } else if (angle > Math.PI * 0.5) {
+                        player.sendActionBar(Mytems.ARROW_RIGHT.component);
+                    } else {
+                        player.sendActionBar(Mytems.ARROW_UP.component);
                     }
                 }
-                boss.add(Mytems.EASTER_EGG.asComponent());
-                event.bossbar(PlayerHudPriority.DEFAULT, join(separator(space()), boss), BossBar.Color.PINK, BossBar.Overlay.PROGRESS, 1f);
-            } else {
-                lines.add(textOfChildren(Mytems.EASTER_EGG, text("Visit the Easter World!", GREEN)));
             }
+            boss.add(Mytems.EASTER_EGG.asComponent());
+            event.bossbar(PlayerHudPriority.DEFAULT, join(separator(space()), boss), BossBar.Color.PINK, BossBar.Overlay.PROGRESS, 1f);
         } else if (user.getEggCooldown() < System.currentTimeMillis()) {
-            lines.add(textOfChildren(Mytems.EASTER_EGG, easterify("Easter Egg Ready!")));
-            lines.add(textOfChildren(Mytems.EASTER_EGG, text("Visit the Easter World!", GREEN)));
+            lines.add(textOfChildren(Mytems.EASTER_EGG, easterify("Easter Egg Ready...")));
         } else {
             long duration = Math.max(0L, user.getEggCooldown() - System.currentTimeMillis());
             long seconds = duration / 1000L;
@@ -579,6 +573,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                                      text(minutes, WHITE), text("m ", GRAY),
                                      text(seconds, WHITE), text("s", GRAY)));
         }
+        lines.addAll(sidebar);
         if (!lines.isEmpty()) {
             event.sidebar(PlayerHudPriority.HIGH, lines);
         }
@@ -590,5 +585,9 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
             map.put(user.getUuid(), user.getTotalEggsDiscovered());
         }
         return Highscore.of(map);
+    }
+
+    public void buildSidebar() {
+        sidebar = Highscore.sidebar(getHighscore());
     }
 }
