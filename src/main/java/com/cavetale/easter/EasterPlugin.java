@@ -513,7 +513,7 @@ public final class EasterPlugin extends JavaPlugin implements Listener {
                 player.sendActionBar(msg);
                 Location loc = currentEgg.toBlock(player.getWorld()).getLocation().add(0.5, 0.5, 0.5);
                 // TODO test this effect
-                player.spawnParticle(Particle.INSTANT_EFFECT, loc, 1, 0.25, 0.25, 0.25, 1.0);
+                player.spawnParticle(Particle.INSTANT_EFFECT, loc, 1, 0.25, 0.25, 0.25, 1.0, new Particle.Spell(Color.GREEN, 1f));
             } else if (distance < 32 * 32) {
                 Component msg = text("Warmer", GOLD, ITALIC);
                 lines.add(textOfChildren(Mytems.EASTER_EGG, text("Hint ", GREEN), msg));
