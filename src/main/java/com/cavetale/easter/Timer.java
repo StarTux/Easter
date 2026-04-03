@@ -15,23 +15,23 @@ public final class Timer {
     @Getter private static int day;
     @Getter private static int hour;
     @Getter private static int dayOfWeek;
-    public static final int ONE = 2025_04_19;
-    public static final int END = 2025_05_03;
+    public static final int ONE = 2026_04_03;
+    public static final int END = 2026_04_17;
     private static final int[] EASTER_DAYS = {
         ONE,
-        2025_04_20,
-        2025_04_21,
-        2025_04_22,
-        2025_04_23,
-        2025_04_24,
-        2025_04_25,
-        2025_04_26,
-        2025_04_27,
-        2025_04_28,
-        2025_04_29,
-        2025_04_30,
-        2025_05_01,
-        2025_05_02,
+        2026_04_04,
+        2026_04_05,
+        2026_04_06,
+        2026_04_07,
+        2026_04_08,
+        2026_04_09,
+        2026_04_10,
+        2026_04_11,
+        2026_04_12,
+        2026_04_13,
+        2026_04_14,
+        2026_04_15,
+        2026_04_16,
         END,
     };
     public static final int DAYS = EASTER_DAYS.length;
